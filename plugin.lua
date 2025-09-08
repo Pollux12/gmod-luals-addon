@@ -1,27 +1,21 @@
 --[[
 	LuaLS plugin for Garry's Mod
 
-	FEATURES:
+	Includes code from https://github.com/TIMONz1535/glua-api-snippets/tree/plugin-wip1
+	Includes code from https://github.com/CFC-Servers/luals_gmod_include
+
+	This started as a project to combine both but ended up adding a bunch of new things and making a few fixes. It currently has:
+
 	- Proper Include Paths resolution
-	- Scripted Class Detection (ENT, SWEP, EFFECT, TOOL) with automated class annotation and inheritance
+	- Scripted Class Detection (ENT, SWEP, EFFECT, TOOL) with automated class annotation and inheritance detection
+	- Derma Class automated annotation with inheritance detection
 	- NetworkVar getter/setter annotation with proper type inference
 	- AccessorFunc getter/setter annotation with force type support
-	- Derma Class Detection and automated annotation with inheritance
-	- Configurable via plugin.config.lua
-	- Comprehensive error handling and caching for performance
+	- Various fixes with class + hook inheritence (e.g PANEL and Panel caused issues)
+	- plugin.config.lua to configure some stuff easily
 
-	ARCHITECTURE:
-	- Modular design with separate processors for different functionality
-	- ConfigManager: Handles configuration loading and merging
-	- CacheManager: Manages various caches with size limits
-	- PatternUtils: Provides reusable pattern matching utilities
-	- ClassDetection: Handles path-based class detection logic
-	- TextProcessor: Processes text for documentation generation
-	- ErrorHandler: Provides safe execution with error handling
-
-	CREDITS:
-	- Based on code from https://github.com/TIMONz1535/glua-api-snippets/tree/plugin-wip1
-	- Includes code from https://github.com/CFC-Servers/luals_gmod_include
+	Potential issues:
+	- Performance, as I've not benchmarked this at all. It seems okay, or at least not noticeable compared to how LuaLS is normally for me.
 --]]
 
 local guide = require "parser.guide"
@@ -30,7 +24,7 @@ local fs = require("bee.filesystem")
 
 ---@return string|nil
 local function getPluginDir()
-	-- Try multiple methods to determine the plugin directory
+	-- Try multiple methods to determine the plugin directory, this is probably not how you're meant to do it at all but it wasn't working for some reason
 	local src
 
 	-- Method 1: Use debug.getinfo
@@ -50,10 +44,8 @@ local function getPluginDir()
 		end
 	end
 
-	-- Method 2: Try to use package.path or other environment clues
-	-- This is a fallback for when debug.getinfo doesn't work in LuaLS
+	-- Method 2: Try to use package.path
 	if package and package.path then
-		-- Look for common plugin directory patterns in package.path
 		for path in package.path:gmatch("[^;]+") do
 			local pluginPath = path:match("(.*/[^/]*plugin[^/]*)/")
 			if pluginPath then
@@ -62,7 +54,6 @@ local function getPluginDir()
 		end
 	end
 
-	-- Method 3: Return nil and let the error handling deal with it
 	return nil
 end
 

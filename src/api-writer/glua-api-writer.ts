@@ -51,6 +51,17 @@ export class GluaApiWriter {
 
   private readonly files: Map<string, IndexedWikiPage[]> = new Map();
 
+  // Class aliases to resolve case-sensitivity issues in inheritance
+  // Maps canonical class names to their aliases
+  // This fixes things like Panels not having PANEL hooks defined
+  private readonly classAliases: Map<string, string[]> = new Map([
+    ['Panel', ['PANEL']],
+    ['Player', ['PLAYER']],
+    ['Entity', ['ENTITY']],
+    ['Weapon', ['WEAPON']],
+    ['Vehicle', ['VEHICLE']],
+  ]);
+
   constructor(
     public readonly outputDirectory: string = './output',
   ) { }
@@ -76,6 +87,39 @@ export class GluaApiWriter {
 
   public addOverride(pageAddress: string, override: string) {
     this.pageOverrides.set(safeFileName(pageAddress, '.'), override);
+  }
+
+  /**
+   * Checks if a class name has aliases that should be generated.
+   */
+  private hasClassAliases(className: string): boolean {
+    return this.classAliases.has(className);
+  }
+
+  /**
+   * Gets the aliases for a given canonical class name.
+   */
+  private getClassAliases(className: string): string[] {
+    return this.classAliases.get(className) || [];
+  }
+
+  /**
+   * Resolves a class name to its canonical form.
+   * If the class name is an alias, returns the canonical name.
+   * Otherwise returns the original name.
+   */
+  private resolveToCanonicalClassName(className: string): string {
+    if (!className) return className;
+
+    // Check if this class name is an alias for another class
+    for (const [canonical, aliases] of this.classAliases) {
+      if (aliases.includes(className)) {
+        return canonical;
+      }
+    }
+
+    // Return the original name if no alias found
+    return className;
   }
 
   private isFakeEnum(_enum: Enum) {
@@ -119,8 +163,12 @@ export class GluaApiWriter {
   private writeClassStart(className: string, realm?: Realm, url?: string, parent?: string, deprecated?: string, description?: string) {
     let api: string = '';
 
-    if (!this.writtenClasses.has(className)) {
-      const classOverride = `class.${className}`;
+    // Resolve class name to canonical form
+    const canonicalClassName = this.resolveToCanonicalClassName(className);
+    const isAlias = canonicalClassName !== className;
+
+    if (!this.writtenClasses.has(canonicalClassName)) {
+      const classOverride = `class.${canonicalClassName}`;
       if (this.pageOverrides.has(classOverride)) {
         api += this.pageOverrides.get(classOverride)!.replace(/\n$/g, '') + '\n\n';
       } else {
@@ -137,7 +185,7 @@ export class GluaApiWriter {
         if (deprecated)
           api += `---@deprecated ${removeNewlines(deprecated)}\n`;
 
-        api += `---@class ${className}`;
+        api += `---@class ${canonicalClassName}`;
 
         if (parent)
           api += ` : ${parent}`;
@@ -145,11 +193,26 @@ export class GluaApiWriter {
         api += '\n';
 
         // for PLAYER, WEAPON, etc. we want to define globals
-        if (className !== className.toUpperCase()) api += 'local ';
-        api += `${className} = {}\n\n`;
+        if (canonicalClassName !== canonicalClassName.toUpperCase()) api += 'local ';
+        api += `${canonicalClassName} = {}\n`;
+
+        // Generate aliases for case-insensitive class names
+        if (this.hasClassAliases(canonicalClassName)) {
+          const aliases = this.getClassAliases(canonicalClassName);
+          for (const alias of aliases) {
+            api += `---@alias ${alias} ${canonicalClassName}\n`;
+          }
+        }
+
+        api += '\n';
       }
 
-      this.writtenClasses.add(className);
+      this.writtenClasses.add(canonicalClassName);
+    }
+
+    // If this was an alias, don't generate any additional content
+    if (isAlias) {
+      return '';
     }
 
     return api;
@@ -570,7 +633,9 @@ export class GluaApiWriter {
   }
 
   private writeFunctionDeclaration(func: Function, args: FunctionArgument[] | undefined, indexer: string = '.') {
-    let declaration = `function ${func.parent ? `${func.parent}${indexer}` : ''}${GluaApiWriter.safeName(func.name)}(`;
+    // Resolve parent class name to canonical form (e.g., PANEL -> Panel)
+    const parentName = func.parent ? this.resolveToCanonicalClassName(func.parent) : '';
+    let declaration = `function ${parentName ? `${parentName}${indexer}` : ''}${GluaApiWriter.safeName(func.name)}(`;
 
     if (args) {
       declaration += args.map(arg => {
