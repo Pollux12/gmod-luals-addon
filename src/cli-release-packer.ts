@@ -40,7 +40,20 @@ async function main() {
   const baseFileName = dateToFilename(metadata.lastUpdate);
 
   for (const target of targets) {
-    const files = walk(options.input, (file, isDirectory) => isDirectory || file.endsWith(`.${target}`) || file.endsWith('__metadata.json'));
+    const files = walk(options.input, (file, isDirectory) => {
+      if (isDirectory) return true;
+      if (file.endsWith(`.${target}`)) return true;
+      if (file.endsWith('__metadata.json')) return true;
+
+      // Include plugin files for lua target (now copied to input directory by publish-library)
+      if (target === 'lua') {
+        const relativePath = path.relative(options.input, file);
+        if (relativePath === 'plugin.lua' || relativePath === 'plugin.config.lua') return true;
+        if (relativePath.startsWith('plugin/') && relativePath.endsWith('.lua')) return true;
+      }
+
+      return false;
+    });
     const targetPath = path.join(options.output, `${baseFileName}.${target}.zip`);
 
     await zipFiles(targetPath, files, options.input);

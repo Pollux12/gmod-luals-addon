@@ -82,14 +82,107 @@ async function main() {
 
   fs.writeFileSync(path.join(options.output, 'config.json'), JSON.stringify(config, null, 2));
 
-  // Include plugin.lua at the root of the addon output so users can reference it via Lua.runtime.plugin
-  fs.copyFileSync(path.join(options.input, '../plugin.lua'), path.join(options.output, 'plugin.lua'));
+  // Include plugin.lua and plugin modules at the root of the library output so users can reference it via Lua.runtime.plugin
+  console.log('Copying plugin files to library output...');
 
-  const files = walk(options.input, (file, isDirectory) => isDirectory || (file.endsWith(`.lua`)));
+  // Get the root directory (where plugin files are located)
+  const rootDir = process.cwd();
+
+  // Copy main plugin files
+  const pluginFiles = [
+    { src: 'plugin.lua', dest: 'plugin.lua' },
+    { src: 'plugin.config.lua', dest: 'plugin.config.lua' }
+  ];
+
+  for (const { src, dest } of pluginFiles) {
+    const srcPath = path.join(rootDir, src);
+    const destPath = path.join(options.output, dest);
+
+    if (fs.existsSync(srcPath)) {
+      fs.copyFileSync(srcPath, destPath);
+      console.log(`Copied ${src} to library output`);
+    } else {
+      console.warn(`Plugin file ${src} not found, skipping...`);
+    }
+  }
+
+  // Copy the plugin modules folder
+  const pluginModulesDir = path.join(rootDir, 'plugin');
+  const outputPluginDir = path.join(options.output, 'plugin');
+
+  if (fs.existsSync(pluginModulesDir)) {
+    if (!fs.existsSync(outputPluginDir)) {
+      fs.mkdirSync(outputPluginDir, { recursive: true });
+    }
+
+    const moduleFiles = walk(pluginModulesDir, (file, isDirectory) => isDirectory || file.endsWith('.lua'));
+    moduleFiles.forEach((file) => {
+      const relativePath = path.relative(pluginModulesDir, file);
+      const outputPath = path.join(outputPluginDir, relativePath);
+
+      // Ensure the directory exists
+      const outputDir = path.dirname(outputPath);
+      if (!fs.existsSync(outputDir)) {
+        fs.mkdirSync(outputDir, { recursive: true });
+      }
+
+      fs.copyFileSync(file, outputPath);
+    });
+    console.log('Copied plugin modules to library output');
+  } else {
+    console.warn('Plugin modules directory not found, skipping...');
+  }
+
+  // Also copy plugin files to the input directory so pack-release can find them
+  console.log('Copying plugin files to input directory for release packing...');
+
+  for (const { src, dest } of pluginFiles) {
+    const srcPath = path.join(rootDir, src);
+    const destPath = path.join(options.input, dest);
+
+    if (fs.existsSync(srcPath)) {
+      fs.copyFileSync(srcPath, destPath);
+    }
+  }
+
+  // Copy plugin modules to input directory
+  const inputPluginDir = path.join(options.input, 'plugin');
+  if (fs.existsSync(pluginModulesDir)) {
+    if (!fs.existsSync(inputPluginDir)) {
+      fs.mkdirSync(inputPluginDir, { recursive: true });
+    }
+
+    const moduleFiles = walk(pluginModulesDir, (file, isDirectory) => isDirectory || file.endsWith('.lua'));
+    moduleFiles.forEach((file) => {
+      const relativePath = path.relative(pluginModulesDir, file);
+      const outputPath = path.join(inputPluginDir, relativePath);
+
+      // Ensure the directory exists
+      const outputDir = path.dirname(outputPath);
+      if (!fs.existsSync(outputDir)) {
+        fs.mkdirSync(outputDir, { recursive: true });
+      }
+
+      fs.copyFileSync(file, outputPath);
+    });
+  }
+
+  const files = walk(options.input, (file, isDirectory) => {
+    if (isDirectory) return true;
+    if (file.endsWith('.lua')) return true;
+    if (file.endsWith('__metadata.json')) return true;
+    return false;
+  });
 
   files.forEach((file) => {
     const relativePath = path.relative(options.input, file);
     const outputPath = path.join(options.output, libraryDirectory, relativePath);
+
+    // Ensure the directory exists
+    const outputDir = path.dirname(outputPath);
+    if (!fs.existsSync(outputDir)) {
+      fs.mkdirSync(outputDir, { recursive: true });
+    }
 
     fs.copyFileSync(file, outputPath);
   });

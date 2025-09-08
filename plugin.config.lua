@@ -9,11 +9,65 @@
 
 return {
 	-- Configure scripted scopes here. Order matters if folders can overlap; the first match wins.
+	-- Each scope includes folder detection patterns for determining single-file vs folder-based structures
 	scopes = {
-		{ global = "ENT",    folder = "entities" },
-		{ global = "SWEP",   folder = "weapons" },
-		{ global = "EFFECT", folder = "effects" },
-		{ global = "TOOL",   folder = "weapons/gmod_tool/stools" },
+		{
+			global = "ENT",
+			folder = "entities",
+			-- Folder detection patterns for entities
+			folderIndicators = {
+				"shared.lua",
+				"init.lua",
+				"cl_init.lua"
+			},
+			additionalPatterns = {
+				"sv_.*%.lua$",
+				"cl_.*%.lua$",
+				"sh_.*%.lua$"
+			}
+		},
+		{
+			global = "SWEP",
+			folder = "weapons",
+			-- Folder detection patterns for weapons
+			folderIndicators = {
+				"shared.lua",
+				"init.lua",
+				"cl_init.lua"
+			},
+			additionalPatterns = {
+				"sv_.*%.lua$",
+				"cl_.*%.lua$",
+				"sh_.*%.lua$"
+			}
+		},
+		{
+			global = "EFFECT",
+			folder = "effects",
+			-- Folder detection patterns for effects
+			folderIndicators = {
+				"init.lua",
+				"cl_init.lua"
+			},
+			additionalPatterns = {
+				"cl_.*%.lua$"
+			}
+		},
+		{
+			global = "TOOL",
+			folder = "weapons/gmod_tool/stools",
+			-- Folder detection patterns for tools
+			folderIndicators = {
+				"shared.lua",
+				"init.lua",
+				"cl_init.lua"
+			},
+			additionalPatterns = {
+				"sv_.*%.lua$",
+				"cl_.*%.lua$",
+				"sh_.*%.lua$"
+			}
+		},
 	},
 
 	-- Configure datatable type mappings for NetworkVar/NetworkVarElement
@@ -47,4 +101,28 @@ return {
 		FORCE_COLOR  = "Color",
 		FORCE_VECTOR = "Vector",
 	},
+
+
+
+	-- Pattern matching configurations
+	patterns = {
+		-- VGUI registration patterns
+		vguiRegister = "vgui%s*%.%s*Register%s*%(",
+		dermaDefineControl = "derma%s*%.%s*DefineControl%s*%(",
+
+		-- AccessorFunc patterns
+		accessorFunc = "AccessorFunc%s*%(",
+
+		-- NetworkVar patterns
+		networkVar = "NetworkVar%s*%(",
+		networkVarElement = "NetworkVarElement%s*%(",
+
+		-- Variable assignment patterns
+		variableAssignment = "([%a_][%w_]*)%s*=%s*",
+
+		-- Class detection patterns
+		localGlobal = "%f[%a]local%s+([%a_][%w_]*)%s*=",
+		baseAssignment = "([%a_][%w_]*)%.%s*Base%s*=%s*([%a_][%w_%.]*)",
+		baseStringAssignment = "([%a_][%w_]*)%.%s*Base%s*=%s*[\"']([^\"']+)[\"']"
+	}
 }
