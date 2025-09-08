@@ -59,6 +59,7 @@ export class GluaApiWriter {
     ['Entity', ['ENTITY']],
     ['Weapon', ['WEAPON']],
     ['Vehicle', ['VEHICLE']],
+    ['Tool', ['TOOL']],
   ]);
 
   constructor(
