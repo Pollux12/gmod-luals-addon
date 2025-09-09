@@ -22,110 +22,11 @@ local guide = require "parser.guide"
 local helper = require "plugins.astHelper"
 local fs = require("bee.filesystem")
 
----@return string|nil
-local function getPluginDir()
-	-- Try multiple methods to determine the plugin directory, this is probably not how you're meant to do it at all but it wasn't working for some reason
-	local src
-
-	-- Method 1: Use debug.getinfo
-	local ok, info = pcall(debug.getinfo, 1, "S")
-	if ok and info and info.source then
-		src = info.source
-		if src:sub(1, 1) == '@' then
-			src = src:sub(2)
-		end
-		if src:sub(1, 8) == "file:///" then
-			src = src:sub(9)
-		end
-		src = src:gsub("\\", "/")
-		local dir = src:match("^(.*)/[^/]*$")
-		if dir then
-			return dir
-		end
-	end
-
-	-- Method 2: Try to use package.path
-	if package and package.path then
-		for path in package.path:gmatch("[^;]+") do
-			local pluginPath = path:match("(.*/[^/]*plugin[^/]*)/")
-			if pluginPath then
-				return pluginPath:gsub("\\", "/")
-			end
-		end
-	end
-
-	return nil
-end
-
--- Load plugin modules with fallback for embedded modules
-local function loadPluginModule(name)
-	local pluginDir = getPluginDir()
-
-	if pluginDir then
-		-- Try to load from external plugin directory
-		local modulePath = pluginDir .. "/plugin/" .. name .. ".lua"
-		local ok, module = pcall(dofile, modulePath)
-		if ok then
-			return module
-		end
-	end
-
-	-- Fallback: Try to load embedded module or return a stub
-	-- This allows the plugin to work even when modules can't be loaded
-	local fallbackModules = {
-		["defaults"] = function()
-			-- Minimal defaults for when the module can't be loaded
-			return {
-				scopes = {
-					{ folder = "entities", global = "ENT" },
-					{ folder = "weapons",  global = "SWEP" },
-					{ folder = "effects",  global = "EFFECT" },
-					{ folder = "tools",    global = "TOOL" }
-				},
-				dtTypes = {},
-				accessorForceTypes = {},
-				baseGmodMap = {},
-				accessorForceTypesByNumber = {},
-				folderDetectionPatterns = {},
-				patterns = {}
-			}
-		end,
-		["folder-detection"] = function()
-			return {
-				detectFolderStructure = function(uri, global, class, config) return nil end
-			}
-		end,
-		["derma-processor"] = function()
-			return {
-				processDermaRegistrations = function(text, config) return {} end,
-				hasDermaRegistrations = function(text, patterns) return false end
-			}
-		end,
-		["accessor-processor"] = function()
-			return {
-				processAccessorFuncs = function(text, global, class, config) return {} end
-			}
-		end,
-		["networkvar-processor"] = function()
-			return {
-				processNetworkVars = function(text, global, class, config) return {} end
-			}
-		end
-	}
-
-	if fallbackModules[name] then
-		return fallbackModules[name]()
-	end
-
-	error("Failed to load plugin module: " .. name .. " and no fallback available")
-end
-
--- Load all plugin modules
-local Defaults = loadPluginModule("defaults")
-local FolderDetection = loadPluginModule("folder-detection")
-local DermaProcessor = loadPluginModule("derma-processor")
-local AccessorProcessor = loadPluginModule("accessor-processor")
-local NetworkVarProcessor = loadPluginModule("networkvar-processor")
+local Defaults = require("plugin.defaults")
+local FolderDetection = require("plugin.folder-detection")
+local DermaProcessor = require("plugin.derma-processor")
+local AccessorProcessor = require("plugin.accessor-processor")
+local NetworkVarProcessor = require("plugin.networkvar-processor")
 
 --[[
 	Cache Management Module
@@ -243,16 +144,9 @@ local function loadConfig()
 	if caches.config ~= nil then
 		return caches.config or nil
 	end
-
-	local dir = ErrorHandler.safeCall(getPluginDir, "getPluginDir")
-	if not dir then
-		caches.config = false
-		return nil
-	end
-
-	local path = dir .. "/plugin.config.lua"
+	-- Use standard require for plugin config; simpler and follows KISS.
 	local cfg = ErrorHandler.safeCall(function()
-		return dofile(path)
+		return require("plugin.config")
 	end, "loadConfig")
 
 	if cfg and type(cfg) == "table" then

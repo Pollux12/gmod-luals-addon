@@ -62,8 +62,8 @@ async function main() {
     {
       "Lua.runtime.version": "LuaJIT",
       "Lua.runtime.special": {
-        "include": "dofile",
-        "IncludeCS": "dofile",
+        "include": "require",
+        "IncludeCS": "require",
       },
       "Lua.runtime.nonstandardSymbol": [
         "!",
