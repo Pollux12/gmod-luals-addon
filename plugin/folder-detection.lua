@@ -4,18 +4,44 @@
 
 local FolderDetection = {}
 
----Checks if a file exists (mock implementation for LuaLS environment)
----@param path string
----@return boolean
-local function fileExists(path)
-	return true -- TODO: Try see if this can be fixed, was changed to always be true due to weird bugs
+-- Import filesystem module
+local fs = require("bee.filesystem")
+
+-- Cache for folder base results to improve performance
+local folderBaseCache = {}
+
+---Converts URI to filesystem path
+---@param uri string
+---@return string
+local function uriToPath(uri)
+	if uri:match("^file://") then
+		local path = uri:sub(8) -- Remove "file://" prefix
+		-- Handle Windows paths
+		if path:match("^/[A-Za-z]:") then
+			path = path:sub(2) -- Remove leading slash for Windows paths like /C:/
+		end
+		return path
+	end
+	return uri
 end
 
----Gets the directory listing (mock implementation for LuaLS environment)
----@param dir string
----@return string[]
-local function getDirectoryListing(dir)
-	return {} -- TODO: Try see if this can be fixed, was changed to always be true due to weird bugs
+---Reads file content using bee.filesystem
+---@param filePath string
+---@return string|nil
+local function readFile(filePath)
+	local fsPath = uriToPath(filePath)
+	if not fs.exists(fsPath) then
+		return nil
+	end
+
+	-- Use io.open for reading since bee.filesystem doesn't have a read method
+	local file = io.open(fsPath, "r")
+	if not file then
+		return nil
+	end
+	local content = file:read("*all")
+	file:close()
+	return content
 end
 
 ---Checks if any files in a directory match the given patterns
@@ -23,12 +49,14 @@ end
 ---@param patterns string[]
 ---@return boolean
 local function hasMatchingFiles(dir, patterns)
-	local files = getDirectoryListing(dir)
+	local fsPath = uriToPath(dir)
 
-	for _, file in ipairs(files) do
-		local fileName = file:lower()
-		for _, pattern in ipairs(patterns) do
-			if fileName:match(pattern) then
+	-- Check if any of the pattern files exist using bee.filesystem
+	for _, pattern in ipairs(patterns) do
+		-- For simple filenames, check directly
+		if not pattern:match("[%*%?%[%]]") then
+			local filePath = fsPath .. "/" .. pattern
+			if fs.exists(filePath) then
 				return true
 			end
 		end
@@ -103,7 +131,7 @@ function FolderDetection.detectFolderStructure(uri, global, class, config)
 	end
 
 	-- Determine base class information
-	local baseInfo = FolderDetection.extractBaseFromFolder(folderPath, global)
+	local baseInfo = FolderDetection.extractBaseFromFolder(folderPath, global, config)
 
 	return {
 		path = folderPath,
@@ -157,24 +185,52 @@ end
 ---Extracts base class information from folder structure
 ---@param folderPath string
 ---@param global string
+---@param config table
 ---@return table|nil baseInfo
-function FolderDetection.extractBaseFromFolder(folderPath, global)
-	-- Try to read a base file or configuration
-	-- This is a simplified implementation
-	local basePath = folderPath .. "/base.txt"
-
-	if fileExists(basePath) then
-		-- In a real implementation, read the base class from file
-		return {
-			kind = "ident",
-			value = global -- Fallback to global
-		}
+function FolderDetection.extractBaseFromFolder(folderPath, global, config)
+	-- Check cache first for performance
+	local cacheKey = folderPath .. ":" .. global
+	if folderBaseCache[cacheKey] then
+		return folderBaseCache[cacheKey]
 	end
 
-	return {
-		kind = "string",
-		value = global
-	}
+	-- Get scope configuration for this global type
+	local scopeConfig = nil
+	if config and config.scopes then
+		for _, scope in ipairs(config.scopes) do
+			if scope.global == global then
+				scopeConfig = scope
+				break
+			end
+		end
+	end
+
+	if not scopeConfig or not scopeConfig.folderIndicators then
+		-- No config available, return default
+		local result = { kind = "string", value = global }
+		folderBaseCache[cacheKey] = result
+		return result
+	end
+
+	-- Search through configured folder indicator files
+	for _, filename in ipairs(scopeConfig.folderIndicators) do
+		local filePath = folderPath .. "/" .. filename
+		local content = readFile(filePath)
+		if content then
+			-- Use the same pattern as single-file entities: global.Base = "some_base"
+			local baseString = content:match(global .. "%.Base%s*=%s[\"\']([%w_]*)[\"\']")
+			if baseString and baseString ~= "" then
+				local result = { kind = "string", value = baseString }
+				folderBaseCache[cacheKey] = result
+				return result
+			end
+		end
+	end
+
+	-- No base class found, return default
+	local result = { kind = "string", value = global }
+	folderBaseCache[cacheKey] = result
+	return result
 end
 
 ---Checks if a directory contains files that match folder-based patterns

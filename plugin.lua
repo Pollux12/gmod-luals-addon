@@ -256,7 +256,7 @@ local function processScriptedClassDiffs(uri, text, global, class)
 	local hasLocal = string.find(text, localPattern) ~= nil
 
 	local folderBase = findFolderBase(uri, global, class)
-	local baseIdent, baseString, baseStringEscaped
+	local baseIdent, baseString
 	if folderBase then
 		if folderBase.kind == "ident" then
 			baseIdent = folderBase.value
@@ -264,8 +264,7 @@ local function processScriptedClassDiffs(uri, text, global, class)
 			baseString = folderBase.value
 		end
 	else
-		baseIdent = text:match(global .. "%.%s*Base%s*=%s*([%a_][%w_%.]*)")
-		baseStringEscaped = text:match(global .. "%.%s*Base%s*=%s*([%a_][%w_%.]*)")
+		baseString = text:match(global .. "%.Base%s*=%s[\"\']([%w_]*)[\"\']")
 	end
 
 	local parent = global
