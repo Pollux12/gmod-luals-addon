@@ -521,6 +521,34 @@ function OnSetText(uri, text)
 			end
 		end
 
+		-- Resolve overlapping diffs: prevent insertions from targeting the same span as replacements
+		local function resolveDiffConflicts(allDiffs)
+			local replacements = {}
+			for _, d in ipairs(allDiffs) do
+				if d.start and d.finish and d.finish >= d.start then
+					replacements[#replacements + 1] = { s = d.start, e = d.finish }
+				end
+			end
+			if #replacements == 0 then return end
+			for _, d in ipairs(allDiffs) do
+				-- Treat finish < start as an insertion at position start
+				if d.start and d.finish and d.finish < d.start then
+					local p = d.start
+					for i = 1, #replacements do
+						local r = replacements[i]
+						if p >= r.s and p <= r.e then
+							-- Move insertion to immediately after the replaced region
+							d.start = r.e + 1
+							d.finish = r.e
+							break
+						end
+					end
+				end
+			end
+		end
+
+		resolveDiffConflicts(diffs)
+
 		-- Apply diffs from bottom to top to avoid offset shifts when inserting/replacing
 		if #diffs > 1 then
 			table.sort(diffs, function(a, b)
