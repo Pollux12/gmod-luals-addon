@@ -733,6 +733,112 @@ local function processScriptedClass(uri, ast, group)
 end
 
 
+-- Determine if a setlocal assignment resets PANEL to a fresh table (including setmetatable({})).
+local function isTableResetAssign(set)
+	if not set or set.type ~= "setlocal" then return false end
+	local v = set.value
+	if not v then return false end
+	if v.type == "table" then return true end
+	if v.type == "call" then
+		local callee = v.node
+		if callee and callee.special == 'setmetatable' and v.args and v.args[1] and v.args[1].type == 'table' then
+			return true
+		end
+	end
+	return false
+end
+
+-- Split reused `PANEL` locals, to make each `PANEL = {}` register as a new variable
+-- This fixes a LuaLS bug, where re-using the variable in the same file would cause it to believe it's a global
+-- This only really impacts panels, so we've hard-coded it to that for now.
+local function splitReusedPanelLocals(astRoot)
+	guide.eachSourceType(astRoot, "local", function(loc)
+		if loc[1] ~= "PANEL" then return end
+		local block = loc.parent
+		if type(block) ~= 'table' then return end
+
+		-- Collect all refs currently bound to this local
+		local refs = {}
+		guide.eachSourceTypes(astRoot, { 'getlocal', 'setlocal' }, function(ref)
+			if ref.node == loc then
+				refs[#refs + 1] = ref
+			end
+		end)
+		if #refs == 0 then return end
+		table.sort(refs, function(a, b) return a.start < b.start end)
+
+		-- Identify all table-reset assignments to PANEL (PANEL = {})
+		local resets = {}
+		for _, r in ipairs(refs) do
+			if isTableResetAssign(r) then
+				resets[#resets + 1] = r
+			end
+		end
+		if #resets == 0 then return end
+
+		table.sort(resets, function(a, b) return a.start < b.start end)
+
+		-- Create Segments: base (original local), then one segment per reset with a new local
+		local segments = {}
+		segments[#segments + 1] = { from = loc.effect or loc.start or 0, at = loc }
+
+		block.locals = block.locals or {}
+
+		for i = 1, #resets do
+			local reset = resets[i]
+			---@type table
+			local newLoc = {
+				type   = 'local',
+				parent = block,
+				[1]    = 'PANEL',
+				start  = reset.start,
+				finish = reset.finish,
+				effect = reset.start,
+				value  = reset.value,
+				attrs  = nil,
+				ref    = {},
+			}
+			if newLoc.value then newLoc.value.parent = newLoc end
+			block.locals[#block.locals + 1] = newLoc
+			segments[#segments + 1] = { from = newLoc.effect, at = newLoc }
+		end
+
+		table.sort(block.locals, function(a, b)
+			return (a.effect or a.start or 0) < (b.effect or b.start or 0)
+		end)
+		table.sort(segments, function(a, b) return a.from < b.from end)
+
+		local function pickSegment(pos)
+			local chosen = segments[1]
+			for i = 1, #segments do
+				if pos >= segments[i].from then
+					chosen = segments[i]
+				else
+					break
+				end
+			end
+			return chosen.at
+		end
+
+		-- Rebind refs to the correct segment-local
+		local refListsByLocal = {}
+		for _, ref in ipairs(refs) do
+			local tgt = pickSegment(ref.start)
+			if ref.node ~= tgt then
+				ref.node = tgt
+			end
+			refListsByLocal[tgt] = refListsByLocal[tgt] or {}
+			refListsByLocal[tgt][#refListsByLocal[tgt] + 1] = ref
+		end
+
+		-- Update locals' ref arrays (best-effort)
+		loc.ref = refListsByLocal[loc]
+		for i = 2, #segments do
+			local l = segments[i].at
+			l.ref = refListsByLocal[l]
+		end
+	end)
+end
 
 
 ---@param uri string # File URI
@@ -742,6 +848,10 @@ function OnTransformAst(uri, ast)
 	local group = {}
 	processScriptedClass(uri, ast, group)
 	-- Moved vgui panels and AccessorFunc processing to OnSetText, since it's easier to debug using the diff view.
+
+	-- Split reused PANEL locals across table resets once per transform.
+	-- This is to fix a LuaLS bug with constant PANEL definitions
+	splitReusedPanelLocals(ast)
 	return ast
 end
 
