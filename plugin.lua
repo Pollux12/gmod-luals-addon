@@ -4,16 +4,7 @@
 	Includes code from https://github.com/TIMONz1535/glua-api-snippets/tree/plugin-wip1
 	Includes code from https://github.com/CFC-Servers/luals_gmod_include
 
-	This started as a project to combine both but ended up adding a bunch of new things and making a few fixes. It currently has:
-
-	- Include Paths resolution
-	- Scripted Class Detection (ENT, SWEP, EFFECT, TOOL) with automated class annotation and inheritance detection
-	- DEFINE_BASECLASS processing
-	- Derma Class automated annotation with inheritance detection
-	- NetworkVar getter/setter annotation with type support
-	- AccessorFunc getter/setter annotation with type support
-	- Various fixes with class + hook inheritence (e.g PANEL and Panel caused issues)
-	- config.lua to configure some stuff easily
+	This started as a project to combine both, but ended up adding a bunch of new things and making a few fixes.
 --]]
 
 local util = require("utility")

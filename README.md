@@ -1,3 +1,48 @@
+This repository is a merge of my personal LuaLS addon and the upstream glua-api-snippets project. Alongside all the features in the original, it contains a [plugin](https://luals.github.io/wiki/plugins/) that allows for several new features and extended functionality.
+
+New features:
+- Include path resolution for gmod lua files
+- Scripted class detection (ENT, SWEP, EFFECT, TOOL) with automated annotation and inheritance
+- Derma (VGUI) class detection with automated annotation and inheritance
+- NetworkVar, AccessorFunc and DEFINE_BASECLASS getter/setter annotation with type support
+- A `config.lua` file to configure some behaviour, useful for custom gamemodes#
+- Various annotation fixes
+
+Manual installation (Visual Studio Code)
+
+1. Obtain the addon files:
+    - Download the `.plugin` folder from a release ZIP, or clone the `lua-language-server-addon` branch into a folder you control.
+
+2. Install the Lua Language Server (LuaLS) extension: https://marketplace.visualstudio.com/items?itemName=sumneko.lua
+
+3. Configure VSCode settings (replace <FOLDER-PATH> with the absolute path to the folder containing this plugin):
+
+```
+"Lua.runtime.plugin": [
+  "<FOLDER-PATH>\\glua-api-snippets\\plugin.lua"
+],
+"Lua.workspace.library": [
+  "<FOLDER-PATH>\\glua-api-snippets\\library"
+],
+```
+
+4. Copy the settings within the settings table in the `config.json` file into your VScode settings similar to the above, otherwise you'll get errors from LuaLS due to non-standard symbols.
+
+Notes:
+- You may have to restart VSCode after installing and applying the relevant settings.
+- There may be some minor bugs or performance issues, since this is not yet finished, although it should be good enough. I use this in a messy gamemode with thousands of files, and haven't noticed it any slower than the original.
+- I will mark releases that I've used for a while as stable, with the rest being pre-release.
+- I don't actively develop addons, and as such, there may be some bugs with addons due to limited testing. It should still work, but let me know if there are any issues.
+- If you use this on a gamemode, check the `config.lua` file to add custom file paths and similar. It should be possible to add support for things such as plugins and items by adding custom scopes.
+- After some more testing, I do plan on cleaning this up and creating a PR into the upstream repo.
+
+Some code is taken from the following:
+https://github.com/TIMONz1535/glua-api-snippets/tree/plugin-wip1
+https://github.com/CFC-Servers/luals_gmod_include
+
+Everything below is the original README and may be outdated
+---
+
 # Garry's Mod Lua API Definitions
 
 [![GitHub Release](https://img.shields.io/github/v/release/luttje/glua-api-snippets)](https://github.com/luttje/glua-api-snippets/releases)
@@ -129,21 +174,6 @@ If you cannot or do not want to use Lua Language Server:
 1. Download and unzip the latest release from [🔗 the releases page](https://github.com/luttje/glua-api-snippets/releases), it's named something like `YYYY-MM-DD_HH-MM-SS.lua.zip`
 
 2. Include or symlink the unzipped directory into your workspace
-
-## 🧩 LuaLS Plugin Support
-
-This repository now supports a LuaLS plugin for Garry's Mod. To enable the plugin:
-
-1. Ensure `plugin.lua` is present in the repository root.
-2. In your LuaLS configuration, add the following setting:
-
-```json
-"Lua.runtime.plugin": ["/absolute/path/to/your/repo/plugin.lua"]
-```
-
-Replace `/absolute/path/to/your/repo/plugin.lua` with the actual path to the plugin file.
-
-The plugin allows for advanced features such as custom hook display and Garry's Mod-specific adjustments. See [LuaLS Plugin Documentation](https://luals.github.io/wiki/plugins/) for more details.
 
 ## Contributors
 
