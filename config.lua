@@ -2,25 +2,23 @@ return {
 	-- Configure scripted scopes here. Order matters if folders can overlap; the first match wins.
 	-- Each scope includes folder detection patterns for determining single-file vs folder-based structures
 	scopes = {
-		{
-			global = "ENT",
-			folder = "entities",
-			-- Folder detection patterns for entities
-			folderIndicators = {
+		{               -- Entities within /entities folder, scope ENT
+			global = "ENT", -- This is the scope that the class will inherit from
+			folder = "entities", -- This is the folder we'll match against
+			folderIndicators = { -- We look for these files to dermine if this is a single-file class or a folder-based class
 				"shared.lua",
 				"init.lua",
 				"cl_init.lua"
 			},
-			additionalPatterns = {
+			additionalPatterns = { -- These patterns are additionally used to help determine if this is a single-file class or a folder-based class
 				"sv_.*%.lua$",
 				"cl_.*%.lua$",
 				"sh_.*%.lua$"
 			}
 		},
-		{
+		{ -- Weapons within /weapons folder, scope SWEP
 			global = "SWEP",
 			folder = "weapons",
-			-- Folder detection patterns for weapons
 			folderIndicators = {
 				"shared.lua",
 				"init.lua",
@@ -32,10 +30,9 @@ return {
 				"sh_.*%.lua$"
 			}
 		},
-		{
+		{ -- Effects within /effects folder, scope EFFECT
 			global = "EFFECT",
 			folder = "effects",
-			-- Folder detection patterns for effects
 			folderIndicators = {
 				"init.lua",
 				"cl_init.lua"
@@ -44,10 +41,9 @@ return {
 				"cl_.*%.lua$"
 			}
 		},
-		{
+		{ -- Tools within /weapons/gmod_tool/stools folder, scope TOOL
 			global = "TOOL",
 			folder = "weapons/gmod_tool/stools",
-			-- Folder detection patterns for tools
 			folderIndicators = {
 				"shared.lua",
 				"init.lua",
@@ -93,6 +89,18 @@ return {
 		FORCE_VECTOR = "Vector",
 	},
 
+	-- Numeric FORCE_* mapping (optional but recommended)
+	-- Keys correspond to FORCE_* numeric constants used by AccessorFunc when a number is passed
+	accessorForceTypesByNumber = {
+		[0] = "any", -- FORCE_NONE
+		[1] = "string", -- FORCE_STRING
+		[2] = "number", -- FORCE_NUMBER
+		[3] = "boolean", -- FORCE_BOOL
+		[4] = "Angle", -- FORCE_ANGLE
+		[5] = "Color", -- FORCE_COLOR
+		[6] = "Vector", -- FORCE_VECTOR
+	},
+
 	-- Pattern matching
 	patterns = {
 		-- VGUI registration patterns
@@ -106,12 +114,23 @@ return {
 		networkVar = "NetworkVar%s*%(",
 		networkVarElement = "NetworkVarElement%s*%(",
 
+		-- DEFINE_BASECLASS pattern
+		defineBaseclass = "DEFINE_BASECLASS%s*(%b())",
+
 		-- Variable assignment patterns
 		variableAssignment = "([%a_][%w_]*)%s*=%s*",
 
 		-- Class detection patterns
 		localGlobal = "%f[%a]local%s+([%a_][%w_]*)%s*=",
+
+		-- Pattern for a specific name, we replace {name} with the identifier
+		localGlobalByNameTemplate = "%f[%a]local%s+{name}%s*=",
+
 		baseAssignment = "([%a_][%w_]*)%.%s*Base%s*=%s*([%a_][%w_%.]*)",
-		baseStringAssignment = "([%a_][%w_]*)%.%s*Base%s*=%s*[\"']([^\"']+)[\"']"
+		baseStringAssignment = "([%a_][%w_]*)%.%s*Base%s*=%s*[\"']([^\"']+)[\"']",
+
+		-- Pattern for specific base, we replace {name} with the identifier
+		baseAssignmentByNameTemplate = "{name}%.%s*Base%s*=%s*([%a_][%w_%.]*)",
+		baseStringAssignmentByNameTemplate = "{name}%.%s*Base%s*=%s*[\"']([^\"']+)[\"']",
 	}
 }

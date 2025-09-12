@@ -47,11 +47,6 @@ end
 ---@param pattern string
 ---@return table[] calls
 function CallScanner.findCalls(text, pattern)
-	-- Basic validation: ensure pattern ends with '%(' to anchor the scan start.
-	if not pattern:match("%%%($") then
-		-- Misconfigured pattern; return empty to avoid runtime errors.
-		return {}
-	end
 	local calls = {}
 	local searchStart = 1
 	while true do

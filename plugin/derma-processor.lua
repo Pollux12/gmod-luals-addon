@@ -82,19 +82,21 @@ end
 ---@param tableName string
 ---@param beforePos integer  -- insertion should happen before this position
 ---@return integer|nil pos   -- start index of the assignment keyword (e.g., the 'l' in 'local')
-local function findNearestPriorAssignment(text, tableName, beforePos)
+local function findNearestPriorAssignment(text, tableName, beforePos, patterns)
 	if not tableName or not beforePos then return nil end
 	local escaped = tableName:gsub("(%p)", "%%%1")
 
 	-- Check for local assignment
-	local localPattern = "%f[%a]local%s+" .. escaped .. "%s*="
+	local localPattern = patterns and patterns.localGlobal or "%f[%a]local%s+([%a_][%w_]*)%s*="
 	local lastLocal
 	do
 		local searchStart = 1
 		while true do
-			local s, e = text:find(localPattern, searchStart)
+			local s, e, name = text:find(localPattern, searchStart)
 			if not s or s >= beforePos then break end
-			lastLocal = s
+			if name == tableName or (not name and text:sub(s, e):match("%f[%a]local%s+" .. escaped .. "%s*=")) then
+				lastLocal = s
+			end
 			searchStart = e + 1
 		end
 	end
@@ -107,7 +109,9 @@ local function findNearestPriorAssignment(text, tableName, beforePos)
 			if lineStart >= beforePos then break end
 			local nextBreak = text:find("\r?\n", lineStart) or (#text + 1)
 			local line = text:sub(lineStart, nextBreak - 1)
-			if line:match("^%s*" .. escaped .. "%s*=") then
+			local varAssign = patterns and patterns.variableAssignment or "([%a_][%w_]*)%s*=%s*"
+			local name = line:match("^%s*" .. varAssign)
+			if name == tableName then
 				lastGlobal = lineStart
 			end
 			lineStart = nextBreak + 1
@@ -137,7 +141,7 @@ function DermaProcessor.processVguiRegistrations(text, patterns)
 	local registrations = DermaProcessor.findVguiRegistrations(text, vguiPattern)
 
 	for _, registration in ipairs(registrations) do
-		local diff = DermaProcessor.createVguiDocumentation(registration, text)
+		local diff = DermaProcessor.createVguiDocumentation(registration, text, patterns)
 		if diff then
 			diffs[#diffs + 1] = diff
 		end
@@ -158,7 +162,7 @@ function DermaProcessor.processDermaDefineControl(text, patterns)
 	local definitions = DermaProcessor.findDermaDefinitions(text, dermaPattern)
 
 	for _, definition in ipairs(definitions) do
-		local diff = DermaProcessor.createDermaDocumentation(definition, text)
+		local diff = DermaProcessor.createDermaDocumentation(definition, text, patterns)
 		if diff then
 			diffs[#diffs + 1] = diff
 		end
@@ -258,13 +262,13 @@ end
 ---@param registration table Registration info
 ---@param text string Full file content
 ---@return table|nil diff Documentation diff
-function DermaProcessor.createVguiDocumentation(registration, text)
+function DermaProcessor.createVguiDocumentation(registration, text, patterns)
 	-- Skip if a class doc for this panel already exists in the file
 	if hasExistingClassDoc(text, registration.name) then
 		return nil
 	end
 	-- Find the nearest table definition location before the registration call
-	local tablePos = findNearestPriorAssignment(text, registration.table, registration.position)
+	local tablePos = findNearestPriorAssignment(text, registration.table, registration.position, patterns)
 	if not tablePos then return nil end
 
 	-- Generate class documentation
@@ -287,13 +291,13 @@ end
 ---@param definition table Definition info
 ---@param text string Full file content
 ---@return table|nil diff Documentation diff
-function DermaProcessor.createDermaDocumentation(definition, text)
+function DermaProcessor.createDermaDocumentation(definition, text, patterns)
 	-- Skip if a class doc for this panel already exists in the file
 	if hasExistingClassDoc(text, definition.name) then
 		return nil
 	end
 	-- Find the nearest table definition location before the definition call
-	local tablePos = findNearestPriorAssignment(text, definition.table, definition.position)
+	local tablePos = findNearestPriorAssignment(text, definition.table, definition.position, patterns)
 	if not tablePos then return nil end
 
 	-- Generate class documentation

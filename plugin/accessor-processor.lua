@@ -118,7 +118,6 @@ end
 ---@param class string|nil Class name
 ---@param config table Configuration
 ---@return table|nil diff Documentation diff
-
 function AccessorProcessor.createAccessorDocumentation(call, global, class, config, text)
 	local result = AccessorProcessor.createAccessorDocumentationWithFieldDocs(call, global, class, config)
 	return result and result.diff or nil
@@ -174,15 +173,7 @@ function AccessorProcessor.resolveForceType(forceTypeArg, config)
 	-- Check if it's a numeric constant
 	local numValue = tonumber(forceTypeArg)
 	if numValue then
-		local numericTypes = {
-			[0] = "any", -- FORCE_NONE
-			[1] = "string", -- FORCE_STRING
-			[2] = "number", -- FORCE_NUMBER
-			[3] = "boolean", -- FORCE_BOOL
-			[4] = "Angle", -- FORCE_ANGLE
-			[5] = "Color", -- FORCE_COLOR
-			[6] = "Vector", -- FORCE_VECTOR
-		}
+		local numericTypes = (config and config.accessorForceTypesByNumber) or {}
 		return numericTypes[numValue] or "any"
 	end
 

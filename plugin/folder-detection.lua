@@ -10,6 +10,10 @@ local fs = require("bee.filesystem")
 -- Cache for folder base results to improve performance
 local folderBaseCache = {}
 
+-- Cache for hasMatchingFiles results to improve performance
+-- Structure: { [cacheKey] = { result = boolean, mtime = number } }
+local matchingFilesCache = {}
+
 ---Converts URI to filesystem path
 ---@param uri string
 ---@return string
@@ -47,22 +51,64 @@ end
 ---Checks if any files in a directory match the given patterns
 ---@param dir string
 ---@param patterns string[]
+---@param isLuaPatterns boolean|nil If true, treats patterns as Lua patterns to match against filenames
 ---@return boolean
-local function hasMatchingFiles(dir, patterns)
+local function hasMatchingFiles(dir, patterns, isLuaPatterns)
+	-- Create cache key based on directory and pattern type
+	local cacheKey = dir .. ":" .. (isLuaPatterns and "lua" or "direct")
+
 	local fsPath = uriToPath(dir)
 
-	-- Check if any of the pattern files exist using bee.filesystem
-	for _, pattern in ipairs(patterns) do
-		-- For simple filenames, check directly
-		if not pattern:match("[%*%?%[%]]") then
+	-- Check if directory exists and get its modification time
+	local currentMtime = 0
+	if fs.exists(fsPath) and fs.is_directory(fsPath) then
+		local status = fs.status(fsPath)
+		if status then
+			currentMtime = status.last_write_time
+		end
+	end
+
+	-- Check cache and validate modification time
+	local cached = matchingFilesCache[cacheKey]
+	if cached and cached.mtime == currentMtime then
+		return cached.result
+	end
+
+	local result = false
+
+	if not isLuaPatterns then
+		-- Direct filename matching (existing behavior)
+		for _, pattern in ipairs(patterns) do
 			local filePath = fsPath .. "/" .. pattern
 			if fs.exists(filePath) then
-				return true
+				result = true
+				break
+			end
+		end
+	else
+		-- Lua pattern matching - need to list directory contents
+		if fs.exists(fsPath) and fs.is_directory(fsPath) then
+			-- Iterate through files in directory
+			for file in fs.directory(fsPath) do
+				local filename = file:filename():string()
+				-- Check if filename matches any of the Lua patterns
+				for _, pattern in ipairs(patterns) do
+					if filename:match(pattern) then
+						result = true
+						break
+					end
+				end
+				if result then break end
 			end
 		end
 	end
 
-	return false
+	-- Cache the result with current modification time
+	matchingFilesCache[cacheKey] = {
+		result = result,
+		mtime = currentMtime
+	}
+	return result
 end
 
 ---Determines if a class should be applied to an entire folder based on detection patterns
@@ -119,8 +165,8 @@ function FolderDetection.detectFolderStructure(uri, global, class, config)
 		if parentName and parentName == class then
 			-- We're in a directory named after the class
 			-- Check if there are other files that suggest this is a folder-based structure
-			if hasMatchingFiles(callingDir, folderIndicators) or
-				hasMatchingFiles(callingDir, additionalPatterns) then
+			if hasMatchingFiles(callingDir, folderIndicators, false) or
+				hasMatchingFiles(callingDir, additionalPatterns, true) then
 				folderPath = callingDir
 			end
 		end
@@ -217,12 +263,29 @@ function FolderDetection.extractBaseFromFolder(folderPath, global, config)
 		local filePath = folderPath .. "/" .. filename
 		local content = readFile(filePath)
 		if content then
-			-- Use the same pattern as single-file entities: global.Base = "some_base"
-			local baseString = content:match(global .. "%.Base%s*=%s[\"\']([%w_]*)[\"\']")
-			if baseString and baseString ~= "" then
-				local result = { kind = "string", value = baseString }
-				folderBaseCache[cacheKey] = result
-				return result
+			local patterns = (config and config.patterns) or {}
+			local identTpl = patterns.baseAssignmentByNameTemplate or "{name}%.%s*Base%s*=%s*([%a_][%w_%.]*)"
+			local strTpl = patterns.baseStringAssignmentByNameTemplate or "{name}%.%s*Base%s*=%s*[\"']([^\"']+)[\"']"
+			local baseIdentPattern = identTpl:gsub("{name}", global)
+			local baseStringPattern = strTpl:gsub("{name}", global)
+
+			-- Identifier form: GLOBAL.Base = SomeOtherGlobal
+			do
+				local ident = content:match(baseIdentPattern)
+				if ident and ident ~= "" then
+					local result = { kind = "ident", value = ident }
+					folderBaseCache[cacheKey] = result
+					return result
+				end
+			end
+			-- String form: GLOBAL.Base = "base_name"
+			do
+				local baseStr = content:match(baseStringPattern)
+				if baseStr and baseStr ~= "" then
+					local result = { kind = "string", value = baseStr }
+					folderBaseCache[cacheKey] = result
+					return result
+				end
 			end
 		end
 	end
@@ -257,13 +320,13 @@ function FolderDetection.isFolderBasedStructure(dir, global, config)
 	local folderIndicators = detectionConfig.folderIndicators or {}
 	local additionalPatterns = detectionConfig.additionalPatterns or {}
 
-	-- Check for folder indicators
-	if hasMatchingFiles(dir, folderIndicators) then
+	-- Check for folder indicators (direct file matches)
+	if hasMatchingFiles(dir, folderIndicators, false) then
 		return true
 	end
 
-	-- Check for additional patterns
-	if hasMatchingFiles(dir, additionalPatterns) then
+	-- Check for additional patterns (Lua pattern matches)
+	if hasMatchingFiles(dir, additionalPatterns, true) then
 		return true
 	end
 

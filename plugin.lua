@@ -14,7 +14,6 @@ local guide = require("parser.guide")
 local helper = require("plugins.astHelper")
 local fs = require("bee.filesystem")
 
-local Defaults = require("plugin.defaults")
 local FolderDetection = require("plugin.folder-detection")
 local DermaProcessor = require("plugin.derma-processor")
 local AccessorProcessor = require("plugin.accessor-processor")
@@ -37,15 +36,11 @@ function ErrorHandler.safeCall(func, context)
 	return result, nil
 end
 
--- Use defaults from the Defaults module, mostly as fallback in-case config is missing stuff
-local defaultScriptedScopes = Defaults.scopes
-
 --[[
 		Configuration Management Module
 
 		Handles loading and merging of plugin configuration from config.lua.
 		Provides type-safe configuration access with validation and default fallbacks.
-		TODO: Just return the config table and change everything to use that, most of this is not required
 	--]]
 local ConfigManager = {}
 
@@ -55,88 +50,84 @@ local configCache = nil
 ---@return table|nil
 local function loadConfig()
 	if configCache ~= nil then
-		return configCache or nil
+		return configCache
+	end
+	-- Determine plugin directory from debug info, then load sibling config.lua explicitly.
+	local function getPluginDir()
+		local info = debug.getinfo(1, "S")
+		local src = info and info.source or ""
+		if type(src) == "string" and src:sub(1, 1) == '@' then
+			src = src:sub(2)
+		end
+		-- src is absolute path to this file; strip filename
+		local dir = src:match("^(.*)[/\\][^/\\]+$")
+		return dir
 	end
 
 	local cfg = ErrorHandler.safeCall(function()
-		return require("config")
+		local dir = getPluginDir()
+		if not dir then
+			error("unable to determine plugin directory for loading config.lua")
+		end
+		local path = dir .. "/config.lua"
+		-- Use loadfile to avoid require() name collisions with LuaLS internal modules
+		local chunk, lfErr = loadfile(path)
+		if not chunk then
+			error("failed to load config.lua at " .. path .. ": " .. tostring(lfErr))
+		end
+		local ok, mod = pcall(chunk)
+		if not ok then
+			error("error running config.lua: " .. tostring(mod))
+		end
+		return mod
 	end, "loadConfig")
 
-	if cfg and type(cfg) == "table" then
-		configCache = cfg
-		return cfg
+	if not cfg or type(cfg) ~= "table" then
+		error("plugin config.lua is missing or invalid (expected table)")
 	end
 
-	configCache = false
-	return nil
+	configCache = cfg
+	return cfg
 end
 
----Merges default configuration with user configuration
----@param defaultConfig table
----@param configKey string
----@param validator? function
----@return table
-function ConfigManager.getMergedConfig(defaultConfig, configKey, validator)
-	local cfg = loadConfig()
-	local merged = {}
-
-	-- Copy defaults
-	for k, v in pairs(defaultConfig) do
-		merged[k] = v
-	end
-
-	-- Merge user config if available
-	if cfg and type(cfg[configKey]) == "table" then
-		for k, v in pairs(cfg[configKey]) do
-			if not validator or validator(k, v) then
-				merged[k] = v
-			end
-		end
-	end
-
-	return merged
-end
 
 ---@return table
 function ConfigManager.getScopes()
-	local cfg = loadConfig()
-	if cfg and type(cfg.scopes) == "table" then
-		return cfg.scopes
+	local cfg = loadConfig(); assert(cfg)
+	if type(cfg.scopes) ~= "table" then
+		error("config.scopes must be a table")
 	end
-	return defaultScriptedScopes
-end
-
-local defaultDtTypes = Defaults.dtTypes
-local defaultAccessorForceTypes = Defaults.accessorForceTypes
-
--- Validators for configuration merging
-local function isValidStringPair(k, v)
-	return type(k) == "string" and type(v) == "string" and v ~= ""
-end
-
-local function isValidBooleanPair(k, v)
-	return type(k) == "string" and (v == true or v == false)
+	return cfg.scopes
 end
 
 ---@return table<string,string>
 function ConfigManager.getDtTypes()
-	return ConfigManager.getMergedConfig(defaultDtTypes, "dtTypes", isValidStringPair)
+	local cfg = loadConfig(); assert(cfg)
+	if type(cfg.dtTypes) ~= "table" then
+		error("config.dtTypes must be a table")
+	end
+	return cfg.dtTypes
 end
 
 ---@return table<string,string>
 function ConfigManager.getAccessorForceTypes()
-	return ConfigManager.getMergedConfig(defaultAccessorForceTypes, "accessorForceTypes", isValidStringPair)
+	local cfg = loadConfig(); assert(cfg)
+	if type(cfg.accessorForceTypes) ~= "table" then
+		error("config.accessorForceTypes must be a table")
+	end
+	return cfg.accessorForceTypes
 end
-
--- Use defaults from the Defaults module
-local defaultBaseGmodMap = Defaults.baseGmodMap
 
 ---@return table<string, boolean>
 function ConfigManager.getBaseGmodMap()
-	local merged = ConfigManager.getMergedConfig(defaultBaseGmodMap, "baseGmodMap", isValidBooleanPair)
+	local cfg = loadConfig(); assert(cfg)
+	if type(cfg.baseGmodMap) ~= "table" then
+		error("config.baseGmodMap must be a table")
+	end
+	local src = cfg.baseGmodMap
 	-- Convert keys to lowercase for case-insensitive matching
 	local lowercased = {}
-	for k, v in pairs(merged) do
+	for k, v in pairs(src) do
 		lowercased[k:lower()] = v
 	end
 	return lowercased
@@ -145,17 +136,21 @@ end
 ---Gets pattern configurations
 ---@return table
 function ConfigManager.getPatterns()
-	local cfg = loadConfig()
-	if cfg and type(cfg.patterns) == "table" then
-		return ConfigManager.getMergedConfig(Defaults.patterns, "patterns")
+	local cfg = loadConfig(); assert(cfg)
+	if type(cfg.patterns) ~= "table" then
+		error("config.patterns must be a table")
 	end
-	return Defaults.patterns
+	return cfg.patterns
 end
 
 ---Gets numeric mappings for AccessorFunc force types
 ---@return table
 function ConfigManager.getAccessorForceTypesByNumber()
-	return Defaults.accessorForceTypesByNumber
+	local cfg = loadConfig(); assert(cfg)
+	if type(cfg.accessorForceTypesByNumber) ~= "table" then
+		error("config.accessorForceTypesByNumber must be a table")
+	end
+	return cfg.accessorForceTypesByNumber
 end
 
 ---@return table
@@ -191,7 +186,7 @@ end
 -- tableVar is inferred from the next assignment line after the class doc (e.g., PANEL = {})
 ---@param text string
 ---@return table[] classDocs
-local function FindAllClassDocs(text)
+local function FindAllClassDocs(text, patterns)
 	local results = {}
 	local idx = 1
 	while true do
@@ -210,7 +205,12 @@ local function FindAllClassDocs(text)
 			local nl2 = rest2:find("\n") or (#rest2 + 1)
 			nextLine = rest2:sub(1, nl2 - 1)
 		end
-		local tbl = nextLine:match("^%s*local%s+([%a_][%w_]*)%s*=") or nextLine:match("^%s*([%a_][%w_]*)%s*=")
+		local localPat = (patterns and patterns.localGlobal) or "%f[%a]local%s+([%a_][%w_]*)%s*="
+		local varAssign = (patterns and patterns.variableAssignment) or "([%a_][%w_]*)%s*=%s*"
+		local tbl = nextLine:match("^%s*" .. localPat)
+		if not tbl then
+			tbl = nextLine:match("^%s*" .. varAssign)
+		end
 		results[#results + 1] = { className = cls, insertAfter = after, tableVar = tbl }
 		idx = e + 1
 	end
@@ -243,8 +243,9 @@ local function processScriptedClassDiffs(uri, text, global, class)
 	-- Check if this file has Derma panel registrations to avoid conflicts
 	local hasDermaRegistrations = DermaProcessor.hasDermaRegistrations(text, patterns)
 
-	local localPattern = "%f[%a]local%s+" .. global .. "%s*="
-	local hasLocal = string.find(text, localPattern) ~= nil
+	local localByNameTpl = (patterns and patterns.localGlobalByNameTemplate) or "%f[%a]local%s+{name}%s*="
+	local localPattern = localByNameTpl:gsub("{name}", global)
+	local hasLocal = text:find(localPattern) ~= nil
 
 	local folderBase = findFolderBase(uri, global, class)
 	local baseIdent, baseString
@@ -255,7 +256,19 @@ local function processScriptedClassDiffs(uri, text, global, class)
 			baseString = folderBase.value
 		end
 	else
-		baseString = text:match(global .. "%.Base%s*=%s[\"\']([%w_]*)[\"\']")
+		-- Use configured patterns to detect base assignment in current file as a fallback
+		local baseIdentPattern = (patterns and patterns.baseAssignment) or "([%a_][%w_]*)%.%s*Base%s*=%s*([%a_][%w_%.]*)"
+		local baseStringPattern = (patterns and patterns.baseStringAssignment) or
+			"([%a_][%w_]*)%.%s*Base%s*=%s*[\"']([^\"']+)[\"']"
+		local var, ident = text:match(baseIdentPattern)
+		if var == global and ident and ident ~= "" then
+			baseIdent = ident
+		else
+			local var2, bstr = text:match(baseStringPattern)
+			if var2 == global and bstr and bstr ~= "" then
+				baseString = bstr
+			end
+		end
 	end
 
 	local parent = global
@@ -354,8 +367,11 @@ end
 local function processDefineBaseclass(text)
 	local diffs = {}
 	local idx = 1
+	-- Use configured pattern for DEFINE_BASECLASS
+	local cfg = ConfigManager.getConfig()
+	local definePat = (cfg.patterns and cfg.patterns.defineBaseclass) or "DEFINE_BASECLASS%s*(%b())"
 	while true do
-		local s, e, paren = text:find("DEFINE_BASECLASS%s*(%b())", idx)
+		local s, e, paren = text:find(definePat, idx)
 		if not s then break end
 		diffs[#diffs + 1] = {
 			start = s,
@@ -463,8 +479,11 @@ function OnSetText(uri, text)
 							local nl2 = rest2:find("\n") or (#rest2 + 1)
 							nextLine = rest2:sub(1, nl2 - 1)
 						end
-						local tbl = nextLine:match("^%s*local%s+([%a_][%w_]*)%s*=") or
-							nextLine:match("^%s*([%a_][%w_]*)%s*=")
+						local localPat2 = (config.patterns and config.patterns.localGlobal) or
+							"%f[%a]local%s+([%a_][%w_]*)%s*="
+						local varAssign2 = (config.patterns and config.patterns.variableAssignment) or
+							"([%a_][%w_]*)%s*=%s*"
+						local tbl = nextLine:match("^%s*" .. localPat2) or nextLine:match("^%s*" .. varAssign2)
 
 
 						local lines = {}
@@ -505,7 +524,7 @@ function OnSetText(uri, text)
 		-- 2) Non-scripted: if class docs exist in file, append AccessorFunc/NetworkVar under each corresponding class
 		--    based on the table immediately following that class; otherwise, for AccessorFunc skip (avoid inline)
 		if not global then
-			local classDocs = FindAllClassDocs(text)
+			local classDocs = FindAllClassDocs(text, config.patterns)
 			if classDocs and #classDocs > 0 then
 				for _, cdoc in ipairs(classDocs) do
 					local lines = {}
