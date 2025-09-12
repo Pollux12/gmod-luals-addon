@@ -84,47 +84,37 @@ end
 ---@return integer|nil pos   -- start index of the assignment keyword (e.g., the 'l' in 'local')
 local function findNearestPriorAssignment(text, tableName, beforePos)
 	if not tableName or not beforePos then return nil end
-	-- Escape any magic chars in the name
 	local escaped = tableName:gsub("(%p)", "%%%1")
 
-	-- Prefer a local assignment:  %f[%a]local%s+<name>%s*=
+	-- Check for local assignment
 	local localPattern = "%f[%a]local%s+" .. escaped .. "%s*="
-
 	local lastLocal
-	local searchStart = 1
-	while true do
-		local s, e = text:find(localPattern, searchStart)
-		if not s or s >= beforePos then break end
-		lastLocal = s
-		searchStart = e + 1
-	end
-
-	-- Fallback: any assignment at line start (non-local). Anchor at line start to avoid mid-expression matches.
-	-- Pattern: ^%s*<name>%s*=
-	local lastGlobal
-	searchStart = 1
-	while true do
-		local s, e = text:find("\n()%s*" .. escaped .. "%s*=", searchStart)
-		-- s returned by () is the index right after the newline; adjust to point to beginning of the line
-		if not s then break end
-		-- Convert s (start-of-capture) to full position in original string
-		local lineStart = s
-		if lineStart < beforePos then
-			lastGlobal = lineStart
-		else
-			break
-		end
-		searchStart = e + 1
-	end
-	-- Also check the very beginning of the file (first line) separately
 	do
-		local s = text:find("^%s*" .. escaped .. "%s*=")
-		if s and s < beforePos then
-			lastGlobal = s
+		local searchStart = 1
+		while true do
+			local s, e = text:find(localPattern, searchStart)
+			if not s or s >= beforePos then break end
+			lastLocal = s
+			searchStart = e + 1
 		end
 	end
 
-	-- Choose the nearest assignment before the call, regardless of local/global
+	-- Check for global assignment
+	local lastGlobal
+	do
+		local lineStart = 1
+		while lineStart <= #text do
+			if lineStart >= beforePos then break end
+			local nextBreak = text:find("\r?\n", lineStart) or (#text + 1)
+			local line = text:sub(lineStart, nextBreak - 1)
+			if line:match("^%s*" .. escaped .. "%s*=") then
+				lastGlobal = lineStart
+			end
+			lineStart = nextBreak + 1
+		end
+	end
+
+	-- Pick nearest before the call
 	local best = nil
 	if lastLocal and lastLocal < beforePos then best = lastLocal end
 	if lastGlobal and lastGlobal < beforePos then
