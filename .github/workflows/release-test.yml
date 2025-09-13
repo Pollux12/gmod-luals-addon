@@ -5,8 +5,17 @@ on:
     branches:
       #- main
       - test-plugin
-  #schedule:
-    #- cron: "0 0 1 * *"
+    # Only trigger on changes that actually impact our final output
+    paths:
+      - 'src/**'
+      - 'custom/**'
+      - 'plugin/**'
+      - '**/*.lua'
+      - 'package.json'
+      - 'package-lock.json'
+      - 'yarn.lock'
+      - 'tsconfig.json'
+
 jobs:
   release:
     permissions: write-all
@@ -18,40 +27,25 @@ jobs:
       - uses: actions/setup-node@v3
         with:
           node-version: "22"
+
       - name: Install dependencies
         run: npm ci
-      - name: Check if there have been changes to the wiki
-        id: wiki_confirm_no_changes
-        continue-on-error: true
-        run: |
-          if [ "$RUNNER_DEBUG" = "1" ]; then
-            exit 1
-          else
-            # always pass a value even if there are no tags
-            tags=$(git tag -l --sort=-v:refname)
-            npm run wiki-check-changed "$tags"
-          fi
+
       - name: Install zip
-        if: ${{ steps.wiki_confirm_no_changes.outcome == 'failure' }}
         uses: montudor/action-zip@v1
       - name: Scrape wiki
-        if: ${{ steps.wiki_confirm_no_changes.outcome == 'failure' }}
         run: npm run scrape-wiki
       - name: Format the output with StyLua
-        if: ${{ steps.wiki_confirm_no_changes.outcome == 'failure' }}
         uses: JohnnyMorganz/stylua-action@v2.0.0
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           version: latest
           args: --no-editorconfig output/
       - name: Pack release
-        if: ${{ steps.wiki_confirm_no_changes.outcome == 'failure' }}
         run: npm run pack-release
       - name: Publish Lua Language Server Library
-        if: ${{ steps.wiki_confirm_no_changes.outcome == 'failure' }}
         run: npm run publish-library
       - name: Get release files and version
-        if: ${{ steps.wiki_confirm_no_changes.outcome == 'failure' }}
         id: release_json
         run: |
           content=`cat ./dist/release/release.json`
@@ -64,7 +58,6 @@ jobs:
           echo "${content}" >> $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT
       - name: Generate next tag
-        if: ${{ steps.wiki_confirm_no_changes.outcome == 'failure' }}
         id: next_tag
         run: |
           # Ensure we have remote tags
@@ -100,7 +93,6 @@ jobs:
 
           echo "newTag=$newTag" >> $GITHUB_OUTPUT
       - name: Create plugin asset
-        if: ${{ steps.wiki_confirm_no_changes.outcome == 'failure' }}
         id: create_plugin_asset
         run: |
           mkdir -p dist/release
@@ -138,7 +130,6 @@ jobs:
           [ -z "$combined" ] && echo "No artifacts detected for release." >&2
           echo "releaseArtifacts=$combined" >> $GITHUB_OUTPUT
       - name: Create release
-        if: ${{ steps.wiki_confirm_no_changes.outcome == 'failure' }}
         id: create_release
         uses: ncipollo/release-action@v1
         with:
@@ -154,11 +145,13 @@ jobs:
             With this release the following archives are attached:
             - "*.lua.zip": Annotations for Lua definitions to include in your workspace (e.g. EmmyLua)
             - "*.json.zip": JSON definitions based on the Wiki contents (can be used for further processing)
-            - "*.plugin.zip": Plugin archive containing the library files for this release (packaged from the lua-language-server-addon branch contents).
+            - "*.plugin.zip": Packaged plugin containing the addon, plugin and library files for this release, ready to be used with LuaLS (packaged from the lua-language-server-addon branch contents).
+
+            You probably want the *.plugin.zip release.
 
           artifacts: ${{ steps.create_plugin_asset.outputs.releaseArtifacts }}
+
       - name: Copy library to it's own branch
-        if: ${{ steps.wiki_confirm_no_changes.outcome == 'failure' }}
         env:
           LIBRARY_PATH: dist/libraries/garrysmod
           TARGET_BRANCH: lua-language-server-addon
