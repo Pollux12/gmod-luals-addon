@@ -1,5 +1,5 @@
 {
-  "$schema": "./glua-api-snippets.schema.json",
+  "$schema": "https://raw.githubusercontent.com/Pollux12/gmod-luals-addon/test-plugin/glua-api-snippets.schema.json",
   "scopes": [
     {
       "global": "ENT",
