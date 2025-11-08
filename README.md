@@ -15,15 +15,18 @@ This repository is a re-write of my personal LuaLS addon to instead use annotati
 ## Manual installation (Visual Studio Code)
 
 #### 1. Install the Lua Language Server (LuaLS) extension
-- Lua Language Server Extension: https://marketplace.visualstudio.com/items?itemName=sumneko.lua
-- (OPTIONAL) You can also use my extension pack, it includes LuaLS and other useful things: https://marketplace.visualstudio.com/items?itemName=pollux.gmod-dev-pack-cityrp or just search for `pollux.gmod-dev-pack-cityrp` in VSCode Extensions View
 
-#### 2. Download the addon files:
+- Lua Language Server Extension: <https://marketplace.visualstudio.com/items?itemName=sumneko.lua>
+- (OPTIONAL) You can also use my extension pack, it includes LuaLS and other useful things: <https://marketplace.visualstudio.com/items?itemName=pollux.gmod-dev-pack-cityrp> or just search for `pollux.gmod-dev-pack-cityrp` in VSCode Extensions View
+
+#### 2. Download the addon files
+
 - Download the `.plugin` folder from a release ZIP, or clone the `lua-language-server-addon` branch into a folder you control.
-- You can find the latest release here, download the one ending in `.plugin.zip`: https://github.com/Pollux12/gmod-luals-addon/releases/latest
+- You can find the latest release here, download the one ending in `.plugin.zip`: <https://github.com/Pollux12/gmod-luals-addon/releases/latest>
 - Extract it somewhere, you'll need the folder path in the next step.
 
-#### 3. Configure VSCode settings with the following. You can shove these values into either your workspace or profile VSCode settings.
+#### 3. Configure VSCode settings with the following. You can shove these values into either your workspace or profile VSCode settings
+
 - Open VSCode JSON Settings via: `File` -> `Preferences` -> `Settings` -> `Open Settings (JSON)` (top right corner, file icon)
 - Copy and paste the below code block into your settings
 - Replace `FOLDER-PATH` with the absolute path of the folder containing the extracted plugin files. You may have to replace `\` with `/`.
@@ -60,18 +63,21 @@ This repository is a re-write of my personal LuaLS addon to instead use annotati
   ```
 
   </details>
+
 The above is required since this isn't uploaded to the LuaLS addon repository, so it won't automatically load the config contained within the release. If you are not using a dedicated VSCode profile for GLua (you should be!), I'd recommend adding the above to workspace settings rather than profile settings, since profile settings are global (you may run into issues if you have the above config with non gmod lua).
 
 #### 4. (OPTIONAL) luarc.json configuration
+
 - You may use a `.luarc.json` file in the root directory of the workspace to automatically set relevant settings for anyone editing that workspace.
 - [Here are the settings I use in my own project](https://gist.github.com/Pollux12/21513ae49a4b35dc0d2034917468b028), feel free to adapt them.
 
 #### 5. (OPTIONAL) editorconfig configuration
+
 - You may make use of a .editorconfig file to configure the formatter settings for anyone editing that workspace.
 - [Here are the settings I use in my own project](https://gist.github.com/Pollux12/3556eb9208e78e90a49e1f6141f9cb2f), feel free to adapt them
 - If you follow CFC-guidelines, [you may find this more useful](https://cfc.gg/configs/lua_ls/.editorconfig).
 
-#### 6. Once you're done setting it up, please close and re-open VSCode.
+#### 6. Once you're done setting it up, please close and re-open VSCode
 
 ## Notes
 
@@ -83,9 +89,29 @@ The above is required since this isn't uploaded to the LuaLS addon repository, s
 - I know that not everything makes use of the config yet; I'm slowly converting things over once confirming they're stable, since I didn't use a config system in my original version.
 - After some more testing, I do plan on cleaning this up and creating a PR into the upstream repo.
 
+## Workspace Configuration
+
+- The plugin now merges `config.lua` with an optional workspace override named `.glua-api-snippets.json` located at the workspace root. Values from the JSON document replace the defaults; table-like values are deep merged while array-like values replace the original array entirely.
+- To point at a different JSON file (relative to the workspace or as a URI) add `--config <path>` to the plugin arguments. Use `--no-workspace-config` to disable overrides.
+- Visual Studio Code example (`.luarc.json`):
+
+```json
+{
+  "runtime.plugin": ["FOLDER-PATH/plugin.lua"],
+  "runtime.pluginArgs": {
+    "FOLDER-PATH/plugin.lua": ["--config", "config/glua-snippets.json"]
+  }
+}
+```
+
+- Sample `.glua-api-snippets.json`:
+- Invalid or malformed workspace configuration files are ignored after a single warning (shown through LuaLS).
+
+- Use the `example.glua-api-snippets.json` file in the repository root as a template. Copy it to the workspace as `.glua-api-snippets.json` (note the leading dot) so the plugin will find it automatically, or point the plugin at a different file with `--config <path>` when loading the plugin.
+
 Some code is taken from the following:
-https://github.com/TIMONz1535/glua-api-snippets/tree/plugin-wip1
-https://github.com/CFC-Servers/luals_gmod_include
+<https://github.com/TIMONz1535/glua-api-snippets/tree/plugin-wip1>
+<https://github.com/CFC-Servers/luals_gmod_include>
 
 Everything below is the original README and may be outdated
 ---
@@ -112,9 +138,9 @@ To get autocompletion for the Garry's Mod Lua API in your Garry's Mod projects, 
 
 **First** install **Lua Language Server (LuaLS):** for your editor of choice:
 
-  * [Visual Studio Code Extension](https://marketplace.visualstudio.com/items?itemName=sumneko.lua)
+- [Visual Studio Code Extension](https://marketplace.visualstudio.com/items?itemName=sumneko.lua)
 
-  * [Neovim Configuration](https://github.com/neovim/nvim-lspconfig/blob/master/doc/configs.md#lua_ls)
+- [Neovim Configuration](https://github.com/neovim/nvim-lspconfig/blob/master/doc/configs.md#lua_ls)
 
 **Then** download/install our GLua API Definitions for the Lua Language Server. This process varies depending on your editor:
 
