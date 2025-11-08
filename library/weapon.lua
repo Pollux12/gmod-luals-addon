@@ -486,7 +486,9 @@ function Weapon:OnDrop(owner) end
 ---[View wiki](https://wiki.facepunch.com/gmod/WEAPON:OnReloaded)
 function Weapon:OnReloaded() end
 
----![(Shared)](https://github.com/user-attachments/assets/a356f942-57d7-4915-a8cc-559870a980fc) Called when the swep is about to be removed.
+---![(Shared)](https://github.com/user-attachments/assets/a356f942-57d7-4915-a8cc-559870a980fc) Called when the [Scripted Weapon](https://wiki.facepunch.com/gmod/Scripted_Entities) is about to be removed.
+---
+--- [Entity:GetOwner](https://wiki.facepunch.com/gmod/Entity:GetOwner) may be unset at this point, see [WEAPON:OnDrop](https://wiki.facepunch.com/gmod/WEAPON:OnDrop) and [WEAPON:OwnerChanged](https://wiki.facepunch.com/gmod/WEAPON:OwnerChanged).
 ---
 ---[View wiki](https://wiki.facepunch.com/gmod/WEAPON:OnRemove)
 function Weapon:OnRemove() end
@@ -523,6 +525,7 @@ function Weapon:PostDrawViewModel(vm, weapon, ply) end
 ---@param vm Entity This is the view model entity before it is drawn.
 ---@param weapon Weapon This is the weapon that is from the view model.
 ---@param ply Player The the owner of the view model.
+---@return boolean # Return `true` to prevent the default action of rendering the view model. `PostDrawViewModel` will NOT be called in this scenario.
 function Weapon:PreDrawViewModel(vm, weapon, ply) end
 
 ---![(Shared)](https://github.com/user-attachments/assets/a356f942-57d7-4915-a8cc-559870a980fc) Called when primary attack button ( +attack ) is pressed.

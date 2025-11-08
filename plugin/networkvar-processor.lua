@@ -37,38 +37,38 @@ function NetworkVarProcessor.processNetworkVars(text, global, class, config)
 	return diffs
 end
 
-	---Collects NetworkVar and NetworkVarElement docs as strings (no diffs), to be appended under a class doc
-	---@param text string File content
-	---@param global string|nil Global scope
-	---@param class string|nil Class name
-	---@param config table Configuration
-	---@return string[] fieldDocs Documentation lines
-	function NetworkVarProcessor.collectFieldDocs(text, global, class, config)
-		local fieldDocs = {}
-		local patterns = config.patterns or {}
+---Collects NetworkVar and NetworkVarElement docs as strings (no diffs), to be appended under a class doc
+---@param text string File content
+---@param global string|nil Global scope
+---@param class string|nil Class name
+---@param config table Configuration
+---@return string[] fieldDocs Documentation lines
+function NetworkVarProcessor.collectFieldDocs(text, global, class, config)
+	local fieldDocs = {}
+	local patterns = config.patterns or {}
 
-		local networkVarCalls = NetworkVarProcessor.findNetworkVarCalls(text, patterns.networkVar)
-		for _, call in ipairs(networkVarCalls) do
-			local luaType = NetworkVarProcessor.resolveDtType(call.type, config)
-			local selfType = class or global or "Entity"
-			local docs = DocLines.formatNetworkVarPair(call.name, selfType, luaType)
-			for _, line in ipairs(docs) do
-				fieldDocs[#fieldDocs + 1] = line
-			end
+	local networkVarCalls = NetworkVarProcessor.findNetworkVarCalls(text, patterns.networkVar)
+	for _, call in ipairs(networkVarCalls) do
+		local luaType = NetworkVarProcessor.resolveDtType(call.type, config)
+		local selfType = class or global or "Entity"
+		local docs = DocLines.formatNetworkVarPair(call.name, selfType, luaType)
+		for _, line in ipairs(docs) do
+			fieldDocs[#fieldDocs + 1] = line
 		end
-
-		local networkVarElementCalls = NetworkVarProcessor.findNetworkVarElementCalls(text, patterns.networkVarElement)
-		for _, call in ipairs(networkVarElementCalls) do
-			local luaType = NetworkVarProcessor.resolveDtType(call.type, config)
-			local selfType = class or global or "Entity"
-			local docs = DocLines.formatNetworkVarPair(call.name, selfType, luaType)
-			for _, line in ipairs(docs) do
-				fieldDocs[#fieldDocs + 1] = line
-			end
-		end
-
-		return fieldDocs
 	end
+
+	local networkVarElementCalls = NetworkVarProcessor.findNetworkVarElementCalls(text, patterns.networkVarElement)
+	for _, call in ipairs(networkVarElementCalls) do
+		local luaType = NetworkVarProcessor.resolveDtType(call.type, config)
+		local selfType = class or global or "Entity"
+		local docs = DocLines.formatNetworkVarPair(call.name, selfType, luaType)
+		for _, line in ipairs(docs) do
+			fieldDocs[#fieldDocs + 1] = line
+		end
+	end
+
+	return fieldDocs
+end
 
 ---Processes NetworkVar calls in text
 ---@param text string File content

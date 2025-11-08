@@ -14,12 +14,50 @@ local guide = require("parser.guide")
 local helper = require("plugins.astHelper")
 local fs = require("bee.filesystem")
 local vm = require("vm")
+local workspace = require("workspace")
+local fileUri = require("file-uri")
+local ArgParser = require("plugin.arg-parser")
+local Json = require("plugin.json")
 
 local FolderDetection = require("plugin.folder-detection")
 local DermaProcessor = require("plugin.derma-processor")
 local AccessorProcessor = require("plugin.accessor-processor")
 local NetworkVarProcessor = require("plugin.networkvar-processor")
 local ScriptedClass = require("plugin.scripted-class")
+
+local pluginUri = ...
+local bootstrapWorkspaceUri = select(2, ...)
+local rawPluginArgs = select(3, ...)
+
+local function decodeFileUriSafe(uri)
+	if type(uri) ~= "string" then
+		return nil
+	end
+	local ok, result = pcall(fileUri.decode, uri)
+	if ok then
+		return result
+	end
+	return nil
+end
+
+local decodedBootstrapWorkspacePath = decodeFileUriSafe(bootstrapWorkspaceUri)
+
+local pluginArgOptions, pluginArgRemainder = ArgParser.parsePluginOptions(rawPluginArgs, pluginUri)
+if pluginArgOptions.configPath then
+	pluginArgOptions.configPath = pluginArgOptions.configPath:match("^%s*(.-)%s*$")
+	if pluginArgOptions.configPath == "" then
+		pluginArgOptions.configPath = nil
+	end
+end
+
+local PluginOptions = {
+	configPath = pluginArgOptions.configPath,
+	disableWorkspaceConfig = pluginArgOptions.disableWorkspaceConfig or false,
+}
+
+if pluginArgRemainder and #pluginArgRemainder > 0 then
+	log.warn("plugin bootstrap", "unrecognised plugin arguments: " .. table.concat(pluginArgRemainder, ", "))
+end
 
 -- Error Handling Utilities Module
 local ErrorHandler = {}
@@ -45,22 +83,29 @@ end
 	--]]
 local ConfigManager = {}
 
--- Simple config cache
-local configCache = nil
+local DEFAULT_ONLY_KEY = "__default_only"
+local NO_WORKSPACE_KEY = "__no_workspace"
 
----@return table|nil
-local function loadConfig()
-	if configCache ~= nil then
-		return configCache
+local defaultConfigCache = nil
+local workspaceConfigCache = {}
+local mergedConfigCache = {}
+local workspaceWarnings = {}
+local workspaceInfoLogged = {}
+local missingUriWarningIssued = false
+
+ConfigManager.PluginOptions = PluginOptions
+
+local function loadDefaultConfig()
+	if defaultConfigCache ~= nil then
+		return defaultConfigCache
 	end
-	-- Determine plugin directory from debug info, then load sibling config.lua explicitly.
+
 	local function getPluginDir()
 		local info = debug.getinfo(1, "S")
 		local src = info and info.source or ""
 		if type(src) == "string" and src:sub(1, 1) == '@' then
 			src = src:sub(2)
 		end
-		-- src is absolute path to this file; strip filename
 		local dir = src:match("^(.*)[/\\][^/\\]+$")
 		return dir
 	end
@@ -71,7 +116,6 @@ local function loadConfig()
 			error("unable to determine plugin directory for loading config.lua")
 		end
 		local path = dir .. "/config.lua"
-		-- Use loadfile to avoid require() name collisions with LuaLS internal modules
 		local chunk, lfErr = loadfile(path)
 		if not chunk then
 			error("failed to load config.lua at " .. path .. ": " .. tostring(lfErr))
@@ -81,103 +125,433 @@ local function loadConfig()
 			error("error running config.lua: " .. tostring(mod))
 		end
 		return mod
-	end, "loadConfig")
+	end, "loadDefaultConfig")
 
 	if not cfg or type(cfg) ~= "table" then
+		defaultConfigCache = nil
 		error("plugin config.lua is missing or invalid (expected table)")
 	end
 
-	configCache = cfg
+	defaultConfigCache = cfg
 	return cfg
 end
 
+local function isUriLike(value)
+	return type(value) == "string" and value:match("^%a[%w+.-]*://") ~= nil
+end
 
----@return table
-function ConfigManager.getScopes()
-	local cfg = loadConfig(); assert(cfg)
-	if type(cfg.scopes) ~= "table" then
+local function normalizeUri(uri)
+	return ArgParser.normalizePluginIdentity(uri)
+end
+
+local function isArrayLike(tbl)
+	if type(tbl) ~= "table" then
+		return false
+	end
+	local hasNumeric = false
+	for k in pairs(tbl) do
+		if type(k) == "number" then
+			hasNumeric = true
+		else
+			return false
+		end
+	end
+	return hasNumeric
+end
+
+local function deepCopy(value, seen)
+	if value == Json.null then
+		return Json.null
+	end
+	if type(value) ~= "table" then
+		return value
+	end
+	seen = seen or {}
+	if seen[value] then
+		return seen[value]
+	end
+	local copy = {}
+	seen[value] = copy
+	for k, v in pairs(value) do
+		copy[deepCopy(k, seen)] = deepCopy(v, seen)
+	end
+	return copy
+end
+
+local function deepMerge(base, override)
+	if override == Json.null then
+		return nil
+	end
+	if type(base) ~= "table" then
+		if override == nil then
+			return base
+		end
+		if type(override) == "table" then
+			return deepCopy(override)
+		end
+		return override
+	end
+	if type(override) ~= "table" then
+		return override
+	end
+	if isArrayLike(override) then
+		return deepCopy(override)
+	end
+	local result = deepCopy(base)
+	for k, v in pairs(override) do
+		if v == Json.null then
+			result[k] = nil
+		elseif type(v) == "table" and type(result[k]) == "table" and not isArrayLike(v) and not isArrayLike(result[k]) then
+			result[k] = deepMerge(result[k], v)
+		else
+			result[k] = deepCopy(v)
+		end
+	end
+	return result
+end
+
+local function joinPath(base, relative)
+	if not base or not relative or relative == "" then
+		return nil
+	end
+	local ok, combined = pcall(function()
+		local rel = fs.path(relative)
+		if rel:is_absolute() then
+			return rel:string()
+		end
+		local basePath = fs.path(base)
+		return (basePath / rel):string()
+	end)
+	if ok then
+		return combined
+	end
+	if relative:match("^%a:[/\\]") or relative:match("^/") then
+		return relative
+	end
+	local sep = package.config:sub(1, 1)
+	local sanitizedBase = base:gsub("[/\\]+$", "")
+	local sanitizedRel = relative:gsub("^[\\/]+", "")
+	return sanitizedBase .. sep .. sanitizedRel
+end
+
+local function warnWorkspace(workspaceUri, message)
+	local key = workspaceUri or "__none"
+	if workspaceWarnings[key] then
+		return
+	end
+	workspaceWarnings[key] = true
+	log.warn("workspace config", message)
+	if client and client.showMessage then
+		pcall(client.showMessage, "Warning", message)
+	end
+end
+
+function ConfigManager.resolveWorkspaceRoot(uri)
+	local normalized = normalizeUri(uri)
+	local bestUri = nil
+	local bestLength = -1
+
+	local folders = client.workspaceFolders
+	if type(folders) == "table" then
+		for _, folder in ipairs(folders) do
+			if folder and type(folder.uri) == "string" then
+				local candidateNorm = normalizeUri(folder.uri)
+				if normalized and candidateNorm and normalized:sub(1, #candidateNorm) == candidateNorm then
+					if #candidateNorm > bestLength then
+						bestLength = #candidateNorm
+						bestUri = folder.uri
+					end
+				end
+			end
+		end
+	end
+
+	if not bestUri then
+		bestUri = bootstrapWorkspaceUri
+	end
+
+	if not bestUri then
+		return nil, nil
+	end
+
+	local path = decodeFileUriSafe(bestUri)
+	if not path and bestUri == bootstrapWorkspaceUri then
+		path = decodedBootstrapWorkspacePath
+	end
+
+	return bestUri, path
+end
+
+local function resolveWorkspaceConfigPath(workspaceRootUri)
+	local override = PluginOptions.configPath
+
+	local function coerceToPath(value)
+		if type(value) ~= "string" then
+			return nil, nil
+		end
+		if isUriLike(value) then
+			local decoded = decodeFileUriSafe(value)
+			return decoded or value, value
+		end
+		return value, value
+	end
+
+	if override and override ~= "" then
+		if override:match("^%a:[/\\]") or override:match("^/") then
+			return override, override
+		end
+		local fsPath, descriptor = nil, override
+		if isUriLike(override) then
+			fsPath = decodeFileUriSafe(override)
+			if fsPath then
+				return fsPath, descriptor
+			end
+		end
+		if workspace and workspace.getAbsolutePath then
+			local ok, absolute = pcall(workspace.getAbsolutePath, workspaceRootUri, override)
+			if ok and type(absolute) == "string" then
+				local coerced, shown = coerceToPath(absolute)
+				if coerced then
+					return coerced, shown
+				end
+			end
+		end
+		local _, workspacePath = ConfigManager.resolveWorkspaceRoot(workspaceRootUri)
+		if workspacePath then
+			fsPath = joinPath(workspacePath, override)
+		end
+		return fsPath, descriptor
+	end
+
+	local defaultName = ".glua-api-snippets.json"
+	local fsPath = nil
+
+	if workspace and workspace.getAbsolutePath then
+		local ok, absolute = pcall(workspace.getAbsolutePath, workspaceRootUri, defaultName)
+		if ok and type(absolute) == "string" then
+			local coerced, shown = coerceToPath(absolute)
+			if coerced then
+				return coerced, shown
+			end
+		end
+	end
+
+	local _, workspacePath = ConfigManager.resolveWorkspaceRoot(workspaceRootUri)
+	if workspacePath then
+		fsPath = joinPath(workspacePath, defaultName)
+	end
+
+	return fsPath, defaultName
+end
+
+function ConfigManager.loadWorkspaceConfig(workspaceRootUri)
+	local key = workspaceRootUri or "__default"
+	local cached = workspaceConfigCache[key]
+	if cached then
+		return cached.config
+	end
+
+	if PluginOptions.disableWorkspaceConfig then
+		workspaceConfigCache[key] = { config = {}, path = nil }
+		return workspaceConfigCache[key].config
+	end
+
+	if not workspaceRootUri then
+		workspaceConfigCache[key] = { config = {}, path = nil }
+		return workspaceConfigCache[key].config
+	end
+
+	local fsPath, descriptor = resolveWorkspaceConfigPath(workspaceRootUri)
+	if not fsPath or fsPath == "" then
+		workspaceConfigCache[key] = { config = {}, path = descriptor }
+		return workspaceConfigCache[key].config
+	end
+
+	local normalizedPath = fsPath
+	if isUriLike(fsPath) then
+		normalizedPath = decodeFileUriSafe(fsPath) or fsPath
+	end
+
+	if not normalizedPath or not fs.exists(normalizedPath) then
+		workspaceConfigCache[key] = { config = {}, path = normalizedPath }
+		return workspaceConfigCache[key].config
+	end
+
+	local text, readErr = ErrorHandler.safeCall(function()
+		local handle, err = io.open(normalizedPath, "r")
+		if not handle then
+			error(err or ("unable to open " .. normalizedPath))
+		end
+		local data = handle:read("*a")
+		handle:close()
+		return data
+	end, "loadWorkspaceConfig:read")
+
+	if not text then
+		warnWorkspace(workspaceRootUri,
+			string.format("Failed to read workspace config at %s: %s", descriptor or normalizedPath,
+				readErr or "unknown error"))
+		workspaceConfigCache[key] = { config = {}, path = normalizedPath }
+		return workspaceConfigCache[key].config
+	end
+
+	local parsed, decodeErr = Json.decode(text)
+	if not parsed then
+		warnWorkspace(workspaceRootUri,
+			string.format("Failed to parse workspace config %s: %s", descriptor or normalizedPath,
+				decodeErr or "unknown error"))
+		workspaceConfigCache[key] = { config = {}, path = normalizedPath }
+		return workspaceConfigCache[key].config
+	end
+
+	if type(parsed) ~= "table" then
+		warnWorkspace(workspaceRootUri,
+			string.format("Workspace config %s must decode to a table", descriptor or normalizedPath))
+		workspaceConfigCache[key] = { config = {}, path = normalizedPath }
+		return workspaceConfigCache[key].config
+	end
+
+	workspaceConfigCache[key] = { config = parsed, path = normalizedPath }
+
+	if not workspaceInfoLogged[key] then
+		log.info(string.format("workspace override active (%s)", descriptor or normalizedPath))
+		workspaceInfoLogged[key] = true
+	end
+
+	return workspaceConfigCache[key].config
+end
+
+function ConfigManager.getConfig(uri)
+	local defaultCfg = loadDefaultConfig()
+	if not uri then
+		if not missingUriWarningIssued then
+			log.warn("ConfigManager.getConfig called without a URI; workspace overrides are ignored for this request")
+			missingUriWarningIssued = true
+		end
+		if mergedConfigCache[DEFAULT_ONLY_KEY] then
+			return mergedConfigCache[DEFAULT_ONLY_KEY]
+		end
+		local copy = deepCopy(defaultCfg)
+		mergedConfigCache[DEFAULT_ONLY_KEY] = copy
+		return copy
+	end
+
+	local workspaceUri = select(1, ConfigManager.resolveWorkspaceRoot(uri))
+	local key = workspaceUri or NO_WORKSPACE_KEY
+	if mergedConfigCache[key] then
+		return mergedConfigCache[key]
+	end
+
+	local workspaceCfg = ConfigManager.loadWorkspaceConfig(workspaceUri)
+	local merged = deepMerge(defaultCfg, workspaceCfg) or {}
+	mergedConfigCache[key] = merged
+	return merged
+end
+
+function ConfigManager.getScopes(uri)
+	local cfg = ConfigManager.getConfig(uri)
+	local scopes = cfg.scopes
+	if type(scopes) ~= "table" then
 		error("config.scopes must be a table")
 	end
-	return cfg.scopes
+	return scopes
 end
 
----@return table<string,string>
-function ConfigManager.getDtTypes()
-	local cfg = loadConfig(); assert(cfg)
-	if type(cfg.dtTypes) ~= "table" then
+function ConfigManager.getDtTypes(uri)
+	local cfg = ConfigManager.getConfig(uri)
+	local dtTypes = cfg.dtTypes
+	if type(dtTypes) ~= "table" then
 		error("config.dtTypes must be a table")
 	end
-	return cfg.dtTypes
+	return dtTypes
 end
 
----@return table<string,string>
-function ConfigManager.getAccessorForceTypes()
-	local cfg = loadConfig(); assert(cfg)
-	if type(cfg.accessorForceTypes) ~= "table" then
+function ConfigManager.getAccessorForceTypes(uri)
+	local cfg = ConfigManager.getConfig(uri)
+	local forceTypes = cfg.accessorForceTypes
+	if type(forceTypes) ~= "table" then
 		error("config.accessorForceTypes must be a table")
 	end
-	return cfg.accessorForceTypes
+	return forceTypes
 end
 
----@return table<string, boolean>
-function ConfigManager.getBaseGmodMap()
-	local cfg = loadConfig(); assert(cfg)
-	if type(cfg.baseGmodMap) ~= "table" then
+function ConfigManager.getBaseGmodMap(uri)
+	local cfg = ConfigManager.getConfig(uri)
+	local src = cfg.baseGmodMap
+	if type(src) ~= "table" then
 		error("config.baseGmodMap must be a table")
 	end
-	local src = cfg.baseGmodMap
-	-- Convert keys to lowercase for case-insensitive matching
 	local lowercased = {}
 	for k, v in pairs(src) do
-		lowercased[k:lower()] = v
+		if type(k) == "string" then
+			lowercased[k:lower()] = v
+		end
 	end
 	return lowercased
 end
 
----Gets pattern configurations
----@return table
-function ConfigManager.getPatterns()
-	local cfg = loadConfig(); assert(cfg)
-	if type(cfg.patterns) ~= "table" then
+function ConfigManager.getPatterns(uri)
+	local cfg = ConfigManager.getConfig(uri)
+	local patterns = cfg.patterns
+	if type(patterns) ~= "table" then
 		error("config.patterns must be a table")
 	end
-	return cfg.patterns
+	return patterns
 end
 
----Gets numeric mappings for AccessorFunc force types
----@return table
-function ConfigManager.getAccessorForceTypesByNumber()
-	local cfg = loadConfig(); assert(cfg)
-	if type(cfg.accessorForceTypesByNumber) ~= "table" then
+function ConfigManager.getAccessorForceTypesByNumber(uri)
+	local cfg = ConfigManager.getConfig(uri)
+	local numeric = cfg.accessorForceTypesByNumber
+	if type(numeric) ~= "table" then
 		error("config.accessorForceTypesByNumber must be a table")
 	end
-	return cfg.accessorForceTypesByNumber
+	local hasStringKey = false
+	for k in pairs(numeric) do
+		if type(k) == "string" then
+			hasStringKey = true
+			break
+		end
+	end
+	if not hasStringKey then
+		return numeric
+	end
+	local normalized = {}
+	for k, v in pairs(numeric) do
+		if type(k) == "string" then
+			local num = tonumber(k)
+			if num then
+				normalized[num] = v
+			else
+				normalized[k] = v
+			end
+		else
+			normalized[k] = v
+		end
+	end
+	return normalized
 end
 
----@return table<string,string>
-function ConfigManager.getParamNameTypes()
-	local cfg = loadConfig(); assert(cfg)
-	if type(cfg.paramNameTypes) ~= "table" then
+function ConfigManager.getParamNameTypes(uri)
+	local cfg = ConfigManager.getConfig(uri)
+	local mappings = cfg.paramNameTypes
+	if type(mappings) ~= "table" then
 		return {}
 	end
-	return cfg.paramNameTypes
+	return mappings
 end
 
----@return table
-function ConfigManager.getConfig()
-	return {
-		patterns = ConfigManager.getPatterns(),
-		scopes = ConfigManager.getScopes(),
-		dtTypes = ConfigManager.getDtTypes(),
-		accessorForceTypes = ConfigManager.getAccessorForceTypes(),
-		baseGmodMap = ConfigManager.getBaseGmodMap(),
-		accessorForceTypesByNumber = ConfigManager.getAccessorForceTypesByNumber()
-	}
+function ConfigManager._resetForTests()
+	defaultConfigCache = nil
+	workspaceConfigCache = {}
+	mergedConfigCache = {}
+	workspaceWarnings = {}
+	workspaceInfoLogged = {}
+	missingUriWarningIssued = false
 end
 
-local function findFolderBase(uri, global, class)
-	local config = ConfigManager.getConfig()
-	return FolderDetection.detectFolderStructure(uri, global, class, config)
+local function findFolderBase(uri, global, class, config)
+	local cfg = config or ConfigManager.getConfig(uri)
+	return FolderDetection.detectFolderStructure(uri, global, class, cfg)
 end
 
 -- Text Processing Utilities Module
@@ -229,8 +603,8 @@ end
 
 ---@param uri string
 ---@return string? global, string? class
-local function GetScopedClass(uri)
-	local scopes = ConfigManager.getScopes()
+local function GetScopedClass(uri, config)
+	local scopes = (config and config.scopes) or ConfigManager.getScopes(uri)
 	return ScriptedClass.getScopedClass(uri, scopes)
 end
 
@@ -245,10 +619,10 @@ end
 ---@param global string Global scope
 ---@param class string Class name
 ---@return PluginDiff[] diffs Array of documentation diffs
-local function processScriptedClassDiffs(uri, text, global, class)
+local function processScriptedClassDiffs(uri, text, global, class, config)
 	local diffs = {}
-	local config = ConfigManager.getConfig()
-	local patterns = config.patterns
+	local cfg = config or ConfigManager.getConfig(uri)
+	local patterns = cfg.patterns
 
 	-- Check if this file has Derma panel registrations to avoid conflicts
 	local hasDermaRegistrations = DermaProcessor.hasDermaRegistrations(text, patterns)
@@ -257,7 +631,7 @@ local function processScriptedClassDiffs(uri, text, global, class)
 	local localPattern = localByNameTpl:gsub("{name}", global)
 	local hasLocal = text:find(localPattern) ~= nil
 
-	local folderBase = findFolderBase(uri, global, class)
+	local folderBase = findFolderBase(uri, global, class, cfg)
 	local baseIdent, baseString
 	if folderBase then
 		if folderBase.kind == "ident" then
@@ -269,7 +643,7 @@ local function processScriptedClassDiffs(uri, text, global, class)
 		-- Use configured patterns to detect base assignment in current file as a fallback
 		local baseIdentPattern = (patterns and patterns.baseAssignment) or "([%a_][%w_]*)%.%s*Base%s*=%s*([%a_][%w_%.]*)"
 		local baseStringPattern = (patterns and patterns.baseStringAssignment) or
-			"([%a_][%w_]*)%.%s*Base%s*=%s*[\"']([^\"']+)[\"']"
+		"([%a_][%w_]*)%.%s*Base%s*=%s*[\"']([^\"']+)[\"']"
 		local var, ident = text:match(baseIdentPattern)
 		if var == global and ident and ident ~= "" then
 			baseIdent = ident
@@ -296,7 +670,7 @@ local function processScriptedClassDiffs(uri, text, global, class)
 			end
 		end
 	elseif baseString then
-		local baseMap = ConfigManager.getBaseGmodMap()
+		local baseMap = ConfigManager.getBaseGmodMap(uri)
 		if baseMap[baseString:lower()] then
 			parent = global
 		else
@@ -314,11 +688,9 @@ local function processScriptedClassDiffs(uri, text, global, class)
 	if class and not hasDermaRegistrations then
 		local alreadyHasClassDoc = TextProcessor.hasExistingClassDoc(text, class)
 
-		-- Process AccessorFunc calls for this scripted class (collect field docs to place under the class doc)
-		local accessorResult = AccessorProcessor.processAccessorFuncsWithFieldDocs(text, global, class, config)
+		local accessorResult = AccessorProcessor.processAccessorFuncsWithFieldDocs(text, global, class, cfg)
 		local fieldDocs = accessorResult.fieldDocs
-		-- Also collect NetworkVar/NetworkVarElement field docs to keep them under the class doc instead of inline
-		local nvFieldDocs = NetworkVarProcessor.collectFieldDocs(text, global, class, config)
+		local nvFieldDocs = NetworkVarProcessor.collectFieldDocs(text, global, class, cfg)
 		for _, line in ipairs(nvFieldDocs) do
 			fieldDocs[#fieldDocs + 1] = line
 		end
@@ -334,12 +706,10 @@ local function processScriptedClassDiffs(uri, text, global, class)
 				text = classDoc .. "\n" .. localText,
 			}
 		else
-			-- Class doc exists, append field docs right under the existing class line
 			if #fieldDocs > 0 then
 				local pattern = "---@class%s+" .. class .. "[%s:]"
 				local s, e = text:find(pattern)
 				if s then
-					-- find end of the line
 					local after = text:find("\n", e + 1) or e
 					local toInsert = table.concat(fieldDocs, "\n") .. "\n"
 					diffs[#diffs + 1] = {
@@ -350,7 +720,6 @@ local function processScriptedClassDiffs(uri, text, global, class)
 				end
 			end
 			if localText ~= "" then
-				-- Ensure local stub is present at file top if missing
 				diffs[#diffs + 1] = {
 					start = 1,
 					finish = 0,
@@ -374,11 +743,11 @@ end
 ---Processes DEFINE_BASECLASS replacements
 ---@param text string File content
 ---@return PluginDiff[] diffs Array of documentation diffs
-local function processDefineBaseclass(text)
+local function processDefineBaseclass(uri, text, config)
 	local diffs = {}
 	local idx = 1
 	-- Use configured pattern for DEFINE_BASECLASS
-	local cfg = ConfigManager.getConfig()
+	local cfg = config or ConfigManager.getConfig(uri)
 	local definePat = (cfg.patterns and cfg.patterns.defineBaseclass) or "DEFINE_BASECLASS%s*(%b())"
 	while true do
 		local s, e, paren = text:find(definePat, idx)
@@ -440,7 +809,7 @@ function OnSetText(uri, text)
 	local result = ErrorHandler.safeCall(function()
 		---@type PluginDiff[]
 		local diffs = {}
-		local config = ConfigManager.getConfig()
+		local config = ConfigManager.getConfig(uri)
 
 		-- Skip meta files
 		if type(text) == "string" and text:match("^%-%-%-@meta") then
@@ -448,16 +817,16 @@ function OnSetText(uri, text)
 		end
 
 		-- Handle scripted class (ENT/SWEP/EFFECT/TOOL) detection and localization
-		local global, class = GetScopedClass(uri)
+		local global, class = GetScopedClass(uri, config)
 		if global then
-			local scriptedDiffs = processScriptedClassDiffs(uri, text, global, class)
+			local scriptedDiffs = processScriptedClassDiffs(uri, text, global, class, config)
 			for _, diff in ipairs(scriptedDiffs) do
 				diffs[#diffs + 1] = diff
 			end
 		end
 
 		-- Handle DEFINE_BASECLASS replacement
-		local baseclassDiffs = processDefineBaseclass(text)
+		local baseclassDiffs = processDefineBaseclass(uri, text, config)
 		for _, diff in ipairs(baseclassDiffs) do
 			diffs[#diffs + 1] = diff
 		end
@@ -627,7 +996,7 @@ end
 ---@param group table
 ---@param isElement boolean
 ---@return boolean|nil
-local function BindNetworkVar(ast, classNode, source, group, isElement)
+local function BindNetworkVar(ast, classNode, source, group, isElement, config, uri)
 	local args = guide.getParams(source)
 	if not args or #args < (isElement and 4 or 3) then
 		return
@@ -663,7 +1032,7 @@ local function BindNetworkVar(ast, classNode, source, group, isElement)
 		return
 	end
 
-	local dtMap = ConfigManager.getDtTypes()
+	local dtMap = (config and config.dtTypes) or ConfigManager.getDtTypes(uri)
 	local dtType = isElement and "number" or dtMap[argType[1]]
 	local name = argName[1]
 	if not dtType then
@@ -716,8 +1085,8 @@ end
 ---@param ast any
 ---@param group table
 ---@return any|nil classNode, string|nil global, string|nil class
-local function processScriptedClass(uri, ast, group)
-	local global, class = GetScopedClass(uri)
+local function processScriptedClass(uri, ast, group, config)
+	local global, class = GetScopedClass(uri, config)
 	if not global then
 		return nil, nil, nil
 	end
@@ -743,7 +1112,7 @@ local function processScriptedClass(uri, ast, group)
 		if not targetSelf or targetSelf.node ~= classNode then
 			return
 		end
-		return BindNetworkVar(ast, classNode, source, group, targetName == "NetworkVarElement")
+		return BindNetworkVar(ast, classNode, source, group, targetName == "NetworkVarElement", config, uri)
 	end)
 	if ok == false then
 		-- Do not abort other passes if NetworkVar binding fails
@@ -866,7 +1235,8 @@ end
 ---@return any|nil
 function OnTransformAst(uri, ast)
 	local group = {}
-	processScriptedClass(uri, ast, group)
+	local config = ConfigManager.getConfig(uri)
+	processScriptedClass(uri, ast, group, config)
 	-- Moved vgui panels and AccessorFunc processing to OnSetText, since it's easier to debug using the diff view.
 
 	-- Split reused PANEL locals across table resets once per transform.
@@ -902,6 +1272,51 @@ function ResolveRequire(uri, name)
 	return { absolute }
 end
 
+local function resolveUriFromNode(node, visited)
+	local nodeType = type(node)
+	if nodeType == "string" then
+		if isUriLike(node) or node:match("[\\/]") then
+			return node
+		end
+		return nil
+	end
+	if nodeType ~= "table" then
+		return nil
+	end
+	visited = visited or {}
+	if visited[node] then
+		return nil
+	end
+	visited[node] = true
+
+	if type(node.uri) == "string" then
+		return node.uri
+	end
+	if type(node.source) == "string" then
+		if isUriLike(node.source) then
+			return node.source
+		end
+	elseif type(node.source) == "table" then
+		local uri = resolveUriFromNode(node.source, visited)
+		if uri then
+			return uri
+		end
+	end
+	if type(node.node) == "table" then
+		local uri = resolveUriFromNode(node.node, visited)
+		if uri then
+			return uri
+		end
+	end
+	if type(node.parent) == "table" then
+		local uri = resolveUriFromNode(node.parent, visited)
+		if uri then
+			return uri
+		end
+	end
+	return nil
+end
+
 -- Smart parameter inference using VM.OnCompileFunctionParam
 -- Provides best-effort typing for function parameters based on
 -- common parameter name patterns defined in `config.paramNameTypes`.
@@ -916,7 +1331,8 @@ function OnCompileFunctionParam(next, func, param)
 	local source = param and (param.node or param.source or param)
 	if not source then return nil end
 
-	local mappings = ConfigManager.getParamNameTypes()
+	local inferredUri = resolveUriFromNode(param) or resolveUriFromNode(func) or bootstrapWorkspaceUri
+	local mappings = ConfigManager.getParamNameTypes(inferredUri)
 
 	local name
 	if type(source) == "table" then

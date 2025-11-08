@@ -338,6 +338,7 @@ function NPC:GetHeadDirection() end
 function NPC:GetHullType() end
 
 ---![(Server)](https://github.com/user-attachments/assets/d8fbe13a-6305-4e16-8698-5be874721ca1) Returns the ideal activity the NPC currently wants to achieve.
+--- 	**NOTE**: By default, base NPCs will automatically attempt to play a sequence bound to the ideal activity. To prevent ideal activity from overriding NPC's active sequence, set this to `ACT_DO_NOT_DISTURB`.
 ---
 ---[View wiki](https://wiki.facepunch.com/gmod/NPC:GetIdealActivity)
 ---@return number # The ideal activity. Enums/ACT.
@@ -741,7 +742,7 @@ function NPC:MoveClimbStop() end
 ---[View wiki](https://wiki.facepunch.com/gmod/NPC:MoveGroundStep)
 ---@param pos Vector The position we want to reach.
 ---@param targetEntity? Entity Used to test whether we hit the move target when deciding success.
----@param yaw? number Target Yaw angle at the end of the move.
+---@param yaw? number Target Yaw angle at the end of the move. -1 to keep original yaw.
 ---@param asFarAsCan? boolean Whether to move as far as possible.
 ---@param testZ? boolean Also test the Z axis of the target position and NPC position to decide success.
 ---@return number # Whether the movement succeeded or not.
@@ -809,7 +810,7 @@ function NPC:MoveStart() end
 ---[View wiki](https://wiki.facepunch.com/gmod/NPC:MoveStop)
 function NPC:MoveStop() end
 
----![(Server)](https://github.com/user-attachments/assets/d8fbe13a-6305-4e16-8698-5be874721ca1) Works similarly to [NPC:NavSetRandomGoal](https://wiki.facepunch.com/gmod/NPC:NavSetRandomGoal).
+---![(Server)](https://github.com/user-attachments/assets/d8fbe13a-6305-4e16-8698-5be874721ca1) Picks random node around given vector, around specified length, using dir as search direction start. Works similarly to [NPC:NavSetRandomGoal](https://wiki.facepunch.com/gmod/NPC:NavSetRandomGoal), but you can decide any position you want as a search starting point rather than your NPC.
 ---
 ---[View wiki](https://wiki.facepunch.com/gmod/NPC:NavSetGoal)
 ---@param pos Vector The origin to calculate a path from.
@@ -1078,7 +1079,9 @@ function NPC:SetMoveInterval(time) end
 ---@param activity number The movement activity, see Enums/ACT.
 function NPC:SetMovementActivity(activity) end
 
----![(Server)](https://github.com/user-attachments/assets/d8fbe13a-6305-4e16-8698-5be874721ca1) Sets the sequence the NPC navigation path uses for speed calculation. Doesn't seem to have any visible effect on NPC movement.
+---![(Server)](https://github.com/user-attachments/assets/d8fbe13a-6305-4e16-8698-5be874721ca1) Sets the sequence the NPC navigation path uses for speed calculation. Doesn't seem to have any visible effect on NPC movement or actively playing sequence.
+---
+--- To be able to use this, first set [NPC:SetIdealActivity](https://wiki.facepunch.com/gmod/NPC:SetIdealActivity) to `ACT_DO_NOT_DISTURB`, set this to any sequence with root motion data and call [Entity:SetSequence](https://wiki.facepunch.com/gmod/Entity:SetSequence) on your desired sequence. As long as your NPC's [NPC:GetMovementSequence](https://wiki.facepunch.com/gmod/NPC:GetMovementSequence) has root motion data, your NPC will move to navigation point even though your NPC's [Entity:GetSequence](https://wiki.facepunch.com/gmod/Entity:GetSequence) doesn't have any motion.
 ---
 ---[View wiki](https://wiki.facepunch.com/gmod/NPC:SetMovementSequence)
 ---@param sequenceId number The movement sequence index
@@ -1194,8 +1197,8 @@ function NPC:TaskComplete() end
 --- This is meant to be used alongside [NPC:TaskComplete](https://wiki.facepunch.com/gmod/NPC:TaskComplete) to complete or fail custom Lua defined tasks. ([Schedule:AddTask](https://wiki.facepunch.com/gmod/Schedule:AddTask))
 ---
 ---[View wiki](https://wiki.facepunch.com/gmod/NPC:TaskFail)
----@param task string A string most likely defined as a Source Task, for more information on Tasks go to https://developer.valvesoftware.com/wiki/Task
-function NPC:TaskFail(task) end
+---@param failReason string Fail reason to be passed onto ENTITY:OnTaskFailed. The fail reason can also be seen when the NPC's `ent_text` is active.
+function NPC:TaskFail(failReason) end
 
 ---![(Server)](https://github.com/user-attachments/assets/d8fbe13a-6305-4e16-8698-5be874721ca1) Force the NPC to update information on the supplied enemy, as if it had line of sight to it.
 ---
