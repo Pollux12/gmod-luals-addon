@@ -6,6 +6,7 @@ local FolderDetection = {}
 
 -- Import filesystem module
 local fs = require("bee.filesystem")
+local fileUri = require("file-uri")
 
 -- Cache for folder base results to improve performance
 local folderBaseCache = {}
@@ -18,7 +19,14 @@ local matchingFilesCache = {}
 ---@param uri string
 ---@return string
 local function uriToPath(uri)
+	if type(uri) ~= "string" then
+		return uri
+	end
 	if uri:match("^file://") then
+		local ok, decoded = pcall(fileUri.decode, uri)
+		if ok and type(decoded) == "string" and decoded ~= "" then
+			return decoded
+		end
 		local path = uri:sub(8) -- Remove "file://" prefix
 		-- Handle Windows paths
 		if path:match("^/[A-Za-z]:") then

@@ -217,9 +217,9 @@ function GM:ChatText(index, name, text, type) end
 ---@param text string The new contents of the input box
 function GM:ChatTextChanged(text) end
 
----![(Server)](https://github.com/user-attachments/assets/d8fbe13a-6305-4e16-8698-5be874721ca1) Called when a non local player connects to allow the Lua system to check the password.
+---![(Server)](https://github.com/user-attachments/assets/d8fbe13a-6305-4e16-8698-5be874721ca1) Called when a **non local player** connects to allow the Lua system to check the password.
 ---
---- The default behaviour in the base gamemodes emulates what would normally happen. If sv_password is set and its value matches the password passed in by the client - then they are allowed to join. If it isn't set it lets them in too.
+--- The default behaviour in the base gamemodes emulates what would normally happen. If `sv_password` is set and its value matches the password passed in by the client (via `password` concommand) - then they are allowed to join. If `sv_password` isn't set it lets them in too.
 ---
 ---[View wiki](https://wiki.facepunch.com/gmod/GM:CheckPassword)
 ---@param steamID64 string The 64bit Steam ID of the joining player, use util.SteamIDFrom64 to convert it to a `STEAM_0:` one.
@@ -227,7 +227,7 @@ function GM:ChatTextChanged(text) end
 ---@param svPassword string The current value of sv_password (the password set by the server)
 ---@param clPassword string The password provided by the client
 ---@param name string The name of the joining player
----@return boolean # If the hook returns false then the player is disconnected
+---@return boolean # If the hook returns `false` then the player is disconnected
 ---@return string # If returning false in the first argument, then this should be the disconnect message. This will default to `#GameUI_ServerRejectBadPassword`, which is `Bad Password.` translated to the client's language.
 function GM:CheckPassword(steamID64, ipAddress, svPassword, clPassword, name) end
 
@@ -393,8 +393,8 @@ function GM:EntityKeyValue(ent, key, value) end
 --- 	If this hook seems to be called for no apparent reason, check if it's caused by a full update.
 ---
 ---[View wiki](https://wiki.facepunch.com/gmod/GM:EntityNetworkedVarChanged)
----@param ent Entity The owner entity of changed NW2Var
----@param name string The name if changed NW2Var
+---@param ent Entity The owner entity of the changed NW2Var
+---@param name string The name of the changed NW2Var
 ---@param oldval any The old value of the NW2Var
 ---@param newval any The new value of the NW2Var
 function GM:EntityNetworkedVarChanged(ent, name, oldval, newval) end
@@ -957,8 +957,6 @@ function GM:OnDamagedByExplosion(ply, dmginfo) end
 
 ---![(Shared)](https://github.com/user-attachments/assets/a356f942-57d7-4915-a8cc-559870a980fc) Called as soon as the entity is created. Very little of the entity's properties will be initialized at this stage. (keyvalues, classname, flags, anything), especially on the serverside.
 ---
---- **NOTE**: Some entities on initial map spawn are passed through this hook, and then removed in the same frame. This is used by the engine to precache things like models and sounds, so always check their validity with [Global.IsValid](https://wiki.facepunch.com/gmod/Global.IsValid). Will not require [Global.IsValid](https://wiki.facepunch.com/gmod/Global.IsValid) check if you create your hook after [GM:InitPostEntity](https://wiki.facepunch.com/gmod/GM:InitPostEntity).
----
 --- **WARNING**: Removing the created entity during this event can lead to unexpected problems. Use [Global.SafeRemoveEntityDelayed](https://wiki.facepunch.com/gmod/Global.SafeRemoveEntityDelayed)( entity, 0 ) to safely remove the entity.
 ---
 ---[View wiki](https://wiki.facepunch.com/gmod/GM:OnEntityCreated)
@@ -1062,7 +1060,7 @@ function GM:OnPhysgunFreeze(weapon, physobj, ent, ply) end
 
 ---![(Server)](https://github.com/user-attachments/assets/d8fbe13a-6305-4e16-8698-5be874721ca1) Called to when a player has successfully picked up an entity with their Physics Gun.
 ---
---- Not to be confused with [GM:PhysgunPickup](https://wiki.facepunch.com/gmod/GM:PhysgunPickup) which is called multiple times to ask if the player should be able to pick up an entity.
+--- Not to be confused with [GM:PhysgunPickup](https://wiki.facepunch.com/gmod/GM:PhysgunPickup) which is called to ask if the player should be able to pick up an entity.
 ---
 --- See [GM:GravGunOnPickedUp](https://wiki.facepunch.com/gmod/GM:GravGunOnPickedUp) for the Gravity Gun pickup variant.
 --- See [GM:OnPlayerPhysicsPickup](https://wiki.facepunch.com/gmod/GM:OnPlayerPhysicsPickup) for the player `+use` pickup variant.
@@ -1211,7 +1209,7 @@ function GM:PhysgunDrop(player, entity) end
 --- See [GM:OnPhysgunPickup](https://wiki.facepunch.com/gmod/GM:OnPhysgunPickup) for a hook which is called when a player has successfully picked up an entity.
 ---
 --- See [GM:GravGunPickupAllowed](https://wiki.facepunch.com/gmod/GM:GravGunPickupAllowed) for the Gravity Gun pickup variant.
---- See [GM:AllowPlayerPickup](https://wiki.facepunch.com/gmod/GM:AllowPlayerPickup) for the +USE pickup variant.
+--- See [GM:AllowPlayerPickup](https://wiki.facepunch.com/gmod/GM:AllowPlayerPickup) for the `+USE` pickup variant.
 ---
 ---[View wiki](https://wiki.facepunch.com/gmod/GM:PhysgunPickup)
 ---@param player Player The player that is picking up using the Physics Gun.
@@ -1284,7 +1282,7 @@ function GM:PlayerButtonUp(ply, button) end
 
 ---![(Server)](https://github.com/user-attachments/assets/d8fbe13a-6305-4e16-8698-5be874721ca1) Decides whether a player can hear another player using voice chat.
 ---
---- **WARNING**: This hook is called [game.MaxPlayers](https://wiki.facepunch.com/gmod/game.MaxPlayers) * [game.MaxPlayers](https://wiki.facepunch.com/gmod/game.MaxPlayers) times every 0.3 seconds if at least 1 player is talking, if no one is talking its called every 5 seconds.
+--- **WARNING**: This hook is called **players count * speaking players count** times every 0.3 seconds if at least 1 player is talking or every 5 seconds if no one is talking.
 --- 	You should ensure that your code is efficient, or this will definitely influence performance.
 ---
 ---[View wiki](https://wiki.facepunch.com/gmod/GM:PlayerCanHearPlayersVoice)
@@ -1536,7 +1534,7 @@ function GM:PlayerHurt(victim, attacker, healthRemaining, damageTaken) end
 ---
 ---[View wiki](https://wiki.facepunch.com/gmod/GM:PlayerInitialSpawn)
 ---@param player Player The player who spawned.
----@param transition boolean If `true`, the player just spawned from a map transition.
+---@param transition boolean If `true`, the player just spawned from a [map transition](https://developer.valvesoftware.com/wiki/Level_Transitions). (Specifically via `trigger_changelevel` or `point_changelevel` entities)
 function GM:PlayerInitialSpawn(player, transition) end
 
 ---![(Server)](https://github.com/user-attachments/assets/d8fbe13a-6305-4e16-8698-5be874721ca1) Makes the player join a specified team. This is a convenience function that calls [Player:SetTeam](https://wiki.facepunch.com/gmod/Player:SetTeam) and runs the [GM:OnPlayerChangedTeam](https://wiki.facepunch.com/gmod/GM:OnPlayerChangedTeam) hook.
@@ -1831,7 +1829,8 @@ function GM:PostDrawOpaqueRenderables(bDrawingDepth, bDrawingSkybox, isDraw3DSky
 ---@param vm Entity This is the view model entity.
 ---@param ply Player The the owner of the view model.
 ---@param weapon Weapon This is the weapon that is from the view model.
-function GM:PostDrawPlayerHands(hands, vm, ply, weapon) end
+---@param flags number The Enums/STUDIO flags for this render operation.
+function GM:PostDrawPlayerHands(hands, vm, ply, weapon, flags) end
 
 ---![(Client)](https://github.com/user-attachments/assets/a5f6ba64-374d-42f0-b2f4-50e5c964e808) Called after drawing the 3D skybox. This will not be called if skybox rendering was prevented via the [GM:PreDrawSkyBox](https://wiki.facepunch.com/gmod/GM:PreDrawSkyBox) hook.
 ---
@@ -1867,7 +1866,8 @@ function GM:PostDrawTranslucentRenderables(bDrawingDepth, bDrawingSkybox, isDraw
 ---@param viewmodel Entity Players view model
 ---@param player Player The owner of the weapon/view model
 ---@param weapon Weapon The weapon the player is currently holding
-function GM:PostDrawViewModel(viewmodel, player, weapon) end
+---@param flags number The Enums/STUDIO flags for this render operation.
+function GM:PostDrawViewModel(viewmodel, player, weapon, flags) end
 
 ---![(Shared)](https://github.com/user-attachments/assets/a356f942-57d7-4915-a8cc-559870a980fc) Called every time a bullet pellet (i.e. this hook is called multiple times for a shotgun shot) is fired from an entity. Notably this hook will have the final damage and aim direction for the bullet pellet.
 ---
@@ -1988,8 +1988,9 @@ function GM:PreDrawOpaqueRenderables(isDrawingDepth, isDrawSkybox, isDraw3DSkybo
 ---@param vm Entity This is the view model entity before it is drawn.
 ---@param ply Player The the owner of the view model.
 ---@param weapon Weapon This is the weapon that is from the view model.
+---@param flags number The Enums/STUDIO flags for this render operation.
 ---@return boolean # Return true to prevent the viewmodel hands from rendering
-function GM:PreDrawPlayerHands(hands, vm, ply, weapon) end
+function GM:PreDrawPlayerHands(hands, vm, ply, weapon, flags) end
 
 ---![(Client)](https://github.com/user-attachments/assets/a5f6ba64-374d-42f0-b2f4-50e5c964e808) Called before the 3D sky box is drawn. This will not be called for maps with no 3D skybox, or when the 3d skybox is disabled. (`r_3dsky 0`)
 ---
@@ -2028,8 +2029,9 @@ function GM:PreDrawTranslucentRenderables(isDrawingDepth, isDrawSkybox, isDraw3D
 ---@param vm Entity This is the view model entity before it is drawn. On server-side, this entity is the predicted view model.
 ---@param ply Player The owner of the view model.
 ---@param weapon Weapon This is the weapon that is from the view model.
+---@param flags number The Enums/STUDIO flags for this render operation.
 ---@return boolean # Return true to prevent the default view model rendering. This also affects GM:PostDrawViewModel.
-function GM:PreDrawViewModel(vm, ply, weapon) end
+function GM:PreDrawViewModel(vm, ply, weapon, flags) end
 
 ---![(Client)](https://github.com/user-attachments/assets/a5f6ba64-374d-42f0-b2f4-50e5c964e808) Called just before all view models (there are 3 per player, see [Player:GetViewModel](https://wiki.facepunch.com/gmod/Player:GetViewModel)) and entities with `RENDERGROUP_VIEWMODEL` are drawn.
 ---
@@ -2081,6 +2083,7 @@ function GM:PreRender() end
 ---
 ---[View wiki](https://wiki.facepunch.com/gmod/GM:PreUndo)
 ---@param undo table The undo table. See Structures/Undo struct.
+---@return boolean # Return `false` to disallow the undo.
 function GM:PreUndo(undo) end
 
 ---![(Client)](https://github.com/user-attachments/assets/a5f6ba64-374d-42f0-b2f4-50e5c964e808) This will prevent IN_ATTACK from sending to server when player tries to shoot from C menu.

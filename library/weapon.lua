@@ -517,7 +517,8 @@ function Weapon:OwnerChanged() end
 ---@param vm Entity This is the view model entity after it is drawn
 ---@param weapon Weapon This is the weapon that is from the view model (same as self)
 ---@param ply Player The owner of the view model
-function Weapon:PostDrawViewModel(vm, weapon, ply) end
+---@param flags number The Enums/STUDIO flags for this render operation.
+function Weapon:PostDrawViewModel(vm, weapon, ply, flags) end
 
 ---![(Client)](https://github.com/user-attachments/assets/a5f6ba64-374d-42f0-b2f4-50e5c964e808) Allows you to modify viewmodel while the weapon in use before it is drawn. This hook only works if you haven't overridden [GM:PreDrawViewModel](https://wiki.facepunch.com/gmod/GM:PreDrawViewModel).
 ---
@@ -525,8 +526,9 @@ function Weapon:PostDrawViewModel(vm, weapon, ply) end
 ---@param vm Entity This is the view model entity before it is drawn.
 ---@param weapon Weapon This is the weapon that is from the view model.
 ---@param ply Player The the owner of the view model.
+---@param flags number The Enums/STUDIO flags for this render operation.
 ---@return boolean # Return `true` to prevent the default action of rendering the view model. `PostDrawViewModel` will NOT be called in this scenario.
-function Weapon:PreDrawViewModel(vm, weapon, ply) end
+function Weapon:PreDrawViewModel(vm, weapon, ply, flags) end
 
 ---![(Shared)](https://github.com/user-attachments/assets/a356f942-57d7-4915-a8cc-559870a980fc) Called when primary attack button ( +attack ) is pressed.
 ---
@@ -736,4 +738,5 @@ function Weapon:TranslateFOV(fov) end
 ---
 ---[View wiki](https://wiki.facepunch.com/gmod/WEAPON:ViewModelDrawn)
 ---@param ViewModel Entity Players view model
-function Weapon:ViewModelDrawn(ViewModel) end
+---@param flags number The Enums/STUDIO flags for this render operation.
+function Weapon:ViewModelDrawn(ViewModel, flags) end

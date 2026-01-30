@@ -190,6 +190,8 @@ function util.Effect(effectName, effectData, allowOverride, ignorePredictionOrRe
 ---@param context? number Filtering context. See Enums/TEXT_FILTER.
 ---@param player? Player Used to determine if the text should be filtered according to local user's Steam chat filtering settings.
 ---@return string # The filtered text based on given settings.
+---
+--- The maximum length of the string is 4095 bytes.
 function util.FilterText(str, context, player) end
 
 ---![(Menu)](https://github.com/user-attachments/assets/62703d98-767e-4cf2-89b3-390b1c2c5cd9) Converts the full path of the given file to a relative path.
@@ -611,7 +613,7 @@ function util.KeyValuesToTablePreserveOrder(keyvals, usesEscapeSequences, preser
 --- If that specific physics object is valid, then PhysObj:LocalToWorld is used.
 ---
 --- Otherwise, Entity:LocalToWorld.
----@return Vector # The correspondent worldspace vector.
+---@return Vector # The corresponding worldspace vector.
 function util.LocalToWorld(ent, lpos, bone) end
 
 ---![(Shared)](https://github.com/user-attachments/assets/a356f942-57d7-4915-a8cc-559870a980fc) Generates the [MD5 hash](https://en.wikipedia.org/wiki/MD5) of the specified string.

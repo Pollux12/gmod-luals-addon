@@ -20,7 +20,7 @@ player = {}
 ---@class PLAYER
 PLAYER = {}
 
----![(Server)](https://github.com/user-attachments/assets/d8fbe13a-6305-4e16-8698-5be874721ca1) Similar to the serverside command "bot", this function creates a new Player bot with the given name. This bot will not obey to the usual "bot_*" commands, and it's the same bot base used in TF2 and CS:S.
+---![(Server)](https://github.com/user-attachments/assets/d8fbe13a-6305-4e16-8698-5be874721ca1) Similar to the serverside command "bot", this function creates a new Player bot with the given name. This bot will not obey to the usual `bot_*` commands, and it's the same bot base used in TF2 and CS:S.
 ---
 --- The best way to control the behaviour of a Player bot right now is to use the [GM:StartCommand](https://wiki.facepunch.com/gmod/GM:StartCommand) hook and modify its input serverside.
 ---
@@ -108,7 +108,7 @@ function player.GetByUniqueID(uniqueID) end
 --- **NOTE**: Players who are currently connecting to the server will not be counted. See function: [player.GetCountConnecting](https://wiki.facepunch.com/gmod/player.GetCountConnecting)
 ---
 ---[View wiki](https://wiki.facepunch.com/gmod/player.GetCount)
----@return number # Number of players
+---@return number # Number of players.
 function player.GetCount() end
 
 ---![(Server)](https://github.com/user-attachments/assets/d8fbe13a-6305-4e16-8698-5be874721ca1) Returns the amount of players connecting to the server, but not yet spawned in.
@@ -479,7 +479,8 @@ function Player:DropNamedWeapon(class, target, velocity) end
 --- See also [Entity:ForcePlayerDrop](https://wiki.facepunch.com/gmod/Entity:ForcePlayerDrop).
 ---
 ---[View wiki](https://wiki.facepunch.com/gmod/Player:DropObject)
-function Player:DropObject() end
+---@param entity? Entity Only drop if the held entity is this entity. If left blank, drop any held entity.
+function Player:DropObject(entity) end
 
 ---![(Server)](https://github.com/user-attachments/assets/d8fbe13a-6305-4e16-8698-5be874721ca1) Forces the player to drop the specified weapon
 ---
@@ -554,7 +555,7 @@ function Player:Frags() end
 
 ---![(Server)](https://github.com/user-attachments/assets/d8fbe13a-6305-4e16-8698-5be874721ca1) Freeze the player. Frozen players cannot move, look around, or attack. Key bindings are still called. Similar to [Player:Lock](https://wiki.facepunch.com/gmod/Player:Lock) but the player can still take damage.
 ---
---- Adds or removes the [FL_FROZEN](https://wiki.facepunch.com/gmod/Enums/FL) flag from the player.
+--- Manages the [FL_FROZEN](https://wiki.facepunch.com/gmod/Enums/FL#FL_FROZEN) flag on the player.
 ---
 ---[View wiki](https://wiki.facepunch.com/gmod/Player:Freeze)
 ---@param frozen? boolean Whether the player should be frozen.
@@ -743,7 +744,7 @@ function Player:GetFOV() end
 ---![(Client)](https://github.com/user-attachments/assets/a5f6ba64-374d-42f0-b2f4-50e5c964e808) Returns the steam "relationship" towards the player.
 ---
 ---[View wiki](https://wiki.facepunch.com/gmod/Player:GetFriendStatus)
----@return string # Should return one of four different things depending on their status on your friends list: "friend", "blocked", "none" or "requested".
+---@return string # Should return one of four different things depending on their status on your friends list: "friend", "blocked", "none", "requested" or "error_nofriendid" for bots.
 function Player:GetFriendStatus() end
 
 ---![(Shared)](https://github.com/user-attachments/assets/a356f942-57d7-4915-a8cc-559870a980fc) Gets the hands entity of a player
@@ -1136,12 +1137,12 @@ function Player:Give(weaponClassName, bNoAmmo) end
 ---@return number # Ammo given.
 function Player:GiveAmmo(amount, type, hidePopup) end
 
----![(Server)](https://github.com/user-attachments/assets/d8fbe13a-6305-4e16-8698-5be874721ca1) Disables god mode on the player.
+---![(Server)](https://github.com/user-attachments/assets/d8fbe13a-6305-4e16-8698-5be874721ca1) Disables god mode on the player. Removes the [FL_GODMODE](https://wiki.facepunch.com/gmod/Enums/FL#FL_GODMODE) flag from the player.
 ---
 ---[View wiki](https://wiki.facepunch.com/gmod/Player:GodDisable)
 function Player:GodDisable() end
 
----![(Server)](https://github.com/user-attachments/assets/d8fbe13a-6305-4e16-8698-5be874721ca1) Enables god mode on the player.
+---![(Server)](https://github.com/user-attachments/assets/d8fbe13a-6305-4e16-8698-5be874721ca1) Enables god mode on the player. Adds the [FL_GODMODE](https://wiki.facepunch.com/gmod/Enums/FL#FL_GODMODE) flag to the player.
 ---
 ---[View wiki](https://wiki.facepunch.com/gmod/Player:GodEnable)
 function Player:GodEnable() end
@@ -2305,7 +2306,7 @@ function Player:UnfreezePhysicsObjects() end
 ---@deprecated **This function has collisions,** where more than one player can have the same UniqueID. It is **highly** recommended to use Player:SteamID64, Player:SteamID or Player:AccountID instead, which are guaranteed to be unique to each player.
 function Player:UniqueID() end
 
----![(Shared)](https://github.com/user-attachments/assets/a356f942-57d7-4915-a8cc-559870a980fc) Returns a table that will stay allocated for the specific player serverside between connects until the server shuts down. On client it has no such special behavior.
+---![(Shared)](https://github.com/user-attachments/assets/a356f942-57d7-4915-a8cc-559870a980fc) Returns a table that will stay allocated for the specific player serverside between connects until the server shuts down or change map. On client it has no such special behavior.
 ---
 --- **NOTE**: This table is not synchronized (networked) between client and server.
 ---

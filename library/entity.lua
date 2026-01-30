@@ -2,7 +2,7 @@
 
 --- This is a list of all available methods for all entities, which includes [Players](https://wiki.facepunch.com/gmod/Player), [Weapons](https://wiki.facepunch.com/gmod/Weapon), [NPCs](https://wiki.facepunch.com/gmod/NPC) and [Vehicles](https://wiki.facepunch.com/gmod/Vehicle).
 ---
---- For a list of possible members of [Scripted Entities](https://wiki.facepunch.com/gmod/Scripted_Entities) see [ENT Structure](https://wiki.facepunch.com/gmod/Structures/ENT)
+--- For a list of possible members of [Scripted Entities](https://wiki.facepunch.com/gmod/Scripted_Entities) see [ENT Structure](https://wiki.facepunch.com/gmod/Structures/ENT).
 ---
 ---[View wiki](https://wiki.facepunch.com/gmod/Entity)
 ---@class Entity
@@ -338,6 +338,15 @@ function Entity:ClearPoseParameters() end
 ---[View wiki](https://wiki.facepunch.com/gmod/Entity:CollisionRulesChanged)
 function Entity:CollisionRulesChanged() end
 
+---![(Shared)](https://github.com/user-attachments/assets/a356f942-57d7-4915-a8cc-559870a980fc) Same as [Entity:GetBoneMatrix](https://wiki.facepunch.com/gmod/Entity:GetBoneMatrix), but instead of returning a new matrix object, it copies the data to a given matrix.
+---
+--- This is measurably faster when accessing bone matrices a lot.
+---
+---[View wiki](https://wiki.facepunch.com/gmod/Entity:CopyBoneMatrix)
+---@param boneID number The bone ID to retrieve matrix of, starting at index 0.
+---@param data VMatrix The matrix to copy the bone matrix to.
+function Entity:CopyBoneMatrix(boneID, data) end
+
 ---![(Server)](https://github.com/user-attachments/assets/d8fbe13a-6305-4e16-8698-5be874721ca1) Creates bone followers based on the current entity model.
 ---
 --- Bone followers are [Entities](https://wiki.facepunch.com/gmod/Entity) whose [Physics Object](https://wiki.facepunch.com/gmod/PhysObj) follows a specific bone on another Entity's model.
@@ -651,7 +660,7 @@ function Entity:EngineScheduleFinish() end
 ---[View wiki](https://wiki.facepunch.com/gmod/Entity:EntIndex)
 ---@return number # The index of the entity.
 ---
---- `-1` for clientside-only or `0` for serverside-only entities.
+--- `-1` for clientside-only or `0` for serverside-only and NULL entities.
 function Entity:EntIndex() end
 
 ---![(Server)](https://github.com/user-attachments/assets/d8fbe13a-6305-4e16-8698-5be874721ca1) Called when an NPC's expression has finished.
@@ -728,7 +737,7 @@ function Entity:FindTransitionSequence(currentSequence, goalSequence) end
 ---
 ---[View wiki](https://wiki.facepunch.com/gmod/Entity:Fire)
 ---@param input string The name of the input to fire
----@param param? string The value to give to the input, can also be a number or a boolean.
+---@param param? string|number|boolean The value to give to the input, can also be a number or a boolean.
 ---@param delay? number Delay in seconds before firing
 ---@param activator? Entity The entity that caused this input (i.e. the player who pushed a button)
 ---@param caller? Entity The entity that is triggering this input (i.e. the button that was pushed)
@@ -957,6 +966,8 @@ function Entity:GetBoneCount() end
 ---
 --- This is equivalent to constructing a [VMatrix](https://wiki.facepunch.com/gmod/VMatrix) using [Entity:GetBonePosition](https://wiki.facepunch.com/gmod/Entity:GetBonePosition).
 ---
+--- See [Entity:CopyBoneMatrix](https://wiki.facepunch.com/gmod/Entity:CopyBoneMatrix) for a more performant version.
+---
 --- This can return the server's matrix during server lag.
 ---
 --- This can return garbage serverside or a 0,0,0 fourth column (represents position) for v49 models.
@@ -1141,12 +1152,14 @@ function Entity:GetConstrainedPhysObjects() end
 ---![(Shared)](https://github.com/user-attachments/assets/a356f942-57d7-4915-a8cc-559870a980fc) Returns entity's creation ID. Unlike [Entity:EntIndex](https://wiki.facepunch.com/gmod/Entity:EntIndex) or [Entity:MapCreationID](https://wiki.facepunch.com/gmod/Entity:MapCreationID).
 ---
 --- It will increase up until value of `10 000 000`, at which point it will reset back to `0`.
+--- This returns `0` for clientside only entities, such as `class CLuaEffect`.
 ---
 ---[View wiki](https://wiki.facepunch.com/gmod/Entity:GetCreationID)
 ---@return number # The creation ID
 function Entity:GetCreationID() end
 
 ---![(Shared)](https://github.com/user-attachments/assets/a356f942-57d7-4915-a8cc-559870a980fc) Returns the time the entity was created on, relative to [Global.CurTime](https://wiki.facepunch.com/gmod/Global.CurTime).
+--- This returns `0` for clientside only entities, such as `class CLuaEffect`.
 ---
 ---[View wiki](https://wiki.facepunch.com/gmod/Entity:GetCreationTime)
 ---@return number # The time the entity was created on.
@@ -1604,6 +1617,8 @@ function Entity:GetMaxHealth() end
 ---
 ---[View wiki](https://wiki.facepunch.com/gmod/Entity:GetModel)
 ---@return string|nil # The entity's model. Will be a filesystem path for most models.
+---
+--- This is guaranteed to be lower case.
 ---
 --- This will be nil for entities which cannot have models, such as point entities.
 function Entity:GetModel() end
@@ -2145,7 +2160,7 @@ function Entity:GetPersistent() end
 ---@return Player # The player. If entity that was set is not a player, it will return NULL entity.
 function Entity:GetPhysicsAttacker(timeLimit) end
 
----![(Shared)](https://github.com/user-attachments/assets/a356f942-57d7-4915-a8cc-559870a980fc) Returns the entity's physics object, if the entity has physics.
+---![(Shared)](https://github.com/user-attachments/assets/a356f942-57d7-4915-a8cc-559870a980fc) Returns the entity's physics object, if the entity has physics. Same as `ent:GetPhysicsObjectNum( 0 )`
 ---
 --- **NOTE**: Entities don't have clientside physics objects by default, so this will return `[NULL PHYSOBJ]` on the client in most cases.
 ---
@@ -2749,7 +2764,7 @@ function Entity:InitializeAsClientEntity() end
 ---@param input string The name of the input to fire
 ---@param activator? Entity The entity that caused this input (i.e. the player who pushed a button)
 ---@param caller? Entity The entity that is triggering this input (i.e. the button that was pushed)
----@param param? any The value to give to the input. Can be either a string, a number or a boolean.
+---@param param? string|number|boolean The value to give to the input. Can be either a string, a number or a boolean.
 function Entity:Input(input, activator, caller, param) end
 
 ---![(Shared)](https://github.com/user-attachments/assets/a356f942-57d7-4915-a8cc-559870a980fc) **INTERNAL**: This is used internally - although you're able to use it you probably shouldn't.
@@ -2849,10 +2864,12 @@ function Entity:IsLagCompensated() end
 ---@return boolean # Returns true if the line of sight is clear
 function Entity:IsLineOfSightClear(target) end
 
----![(Shared)](https://github.com/user-attachments/assets/a356f942-57d7-4915-a8cc-559870a980fc) Returns if the entity is going to be deleted in the next frame. Entities marked for deletion should not be accessed.
+---![(Shared)](https://github.com/user-attachments/assets/a356f942-57d7-4915-a8cc-559870a980fc) Determines if a given Entity is going to be removed at the start of the next tick.
+---
+--- This will return `true` for an [Entity](https://wiki.facepunch.com/gmod/Entity) after [Entity:Remove](https://wiki.facepunch.com/gmod/Entity:Remove) is called on it.
 ---
 ---[View wiki](https://wiki.facepunch.com/gmod/Entity:IsMarkedForDeletion)
----@return boolean # If the entity is going to be deleted.
+---@return boolean # `true` if the Entity is going to be removed, `false` otherwise.
 function Entity:IsMarkedForDeletion() end
 
 ---![(Shared)](https://github.com/user-attachments/assets/a356f942-57d7-4915-a8cc-559870a980fc) Checks if the entity is a [NextBot](https://wiki.facepunch.com/gmod/NextBot) or not.
@@ -3014,14 +3031,14 @@ function Entity:KeyValue(key, value) end
 ---
 ---[View wiki](https://wiki.facepunch.com/gmod/Entity:LocalToWorld)
 ---@param lpos Vector A local space vector.
----@return Vector # The correspondent worldspace vector.
+---@return Vector # The corresponding worldspace vector.
 function Entity:LocalToWorld(lpos) end
 
 ---![(Shared)](https://github.com/user-attachments/assets/a356f942-57d7-4915-a8cc-559870a980fc) Translates an angle relative to the entity's coordinate system to a worldspace angle.
 ---
 ---[View wiki](https://wiki.facepunch.com/gmod/Entity:LocalToWorldAngles)
 ---@param ang Angle A local space angle.
----@return Angle # The correspondent worldspace angle.
+---@return Angle # The corresponding worldspace angle.
 function Entity:LocalToWorldAngles(ang) end
 
 ---![(Shared)](https://github.com/user-attachments/assets/a356f942-57d7-4915-a8cc-559870a980fc) Returns the attachment index of the given attachment name.
@@ -3550,6 +3567,8 @@ function Entity:PhysicsCollide(colData, collider) end
 ---
 --- **NOTE**: Cannot be used on a ragdoll or the world entity.
 ---
+--- **WARNING**: This function cannot be used when called from a physics callback.
+---
 ---[View wiki](https://wiki.facepunch.com/gmod/Entity:PhysicsDestroy)
 function Entity:PhysicsDestroy() end
 
@@ -3800,7 +3819,11 @@ function Entity:RagdollStopControlling() end
 ---[View wiki](https://wiki.facepunch.com/gmod/Entity:RagdollUpdatePhysics)
 function Entity:RagdollUpdatePhysics() end
 
----![(Shared)](https://github.com/user-attachments/assets/a356f942-57d7-4915-a8cc-559870a980fc) Removes the entity it is used on. The entity will be removed at the start of next tick.
+---![(Shared)](https://github.com/user-attachments/assets/a356f942-57d7-4915-a8cc-559870a980fc) Removes (or deletes) a given [Entity](https://wiki.facepunch.com/gmod/Entity).
+---
+--- The Entity will continue to exist until the start of the next tick.
+---
+--- To check if an Entity will be removed in the next tick, see [Entity:IsMarkedForDeletion](https://wiki.facepunch.com/gmod/Entity:IsMarkedForDeletion)
 ---
 ---[View wiki](https://wiki.facepunch.com/gmod/Entity:Remove)
 function Entity:Remove() end
@@ -3910,8 +3933,6 @@ function Entity:RemoveSpawnFlags(flag) end
 ---
 --- This does not work on "physgun_beam", use [GM:DrawPhysgunBeam](https://wiki.facepunch.com/gmod/GM:DrawPhysgunBeam) instead.
 ---
---- **NOTE**: As a downside of this implementation, only one RenderOverride may be applied at a time.
----
 --- Drawing a viewmodel in this function will cause [GM:PreDrawViewModel](https://wiki.facepunch.com/gmod/GM:PreDrawViewModel), [WEAPON:PreDrawViewModel](https://wiki.facepunch.com/gmod/WEAPON:PreDrawViewModel), [WEAPON:ViewModelDrawn](https://wiki.facepunch.com/gmod/WEAPON:ViewModelDrawn), [GM:PostDrawViewModel](https://wiki.facepunch.com/gmod/GM:PostDrawViewModel), and [WEAPON:PostDrawViewModel](https://wiki.facepunch.com/gmod/WEAPON:PostDrawViewModel) to be called twice.
 ---
 --- This is called before PrePlayerDraw for players. If this function exists at all on a player, their worldmodel will always be rendered regardless of PrePlayerDraw's return.
@@ -4018,7 +4039,7 @@ function Entity:SelectSchedule() end
 ---
 ---[View wiki](https://wiki.facepunch.com/gmod/Entity:SelectWeightedSequence)
 ---@param act ACT The activity ID, see Enums/ACT.
----@return number # The sequence ID
+---@return number # The sequence ID, or `-1` if not found.
 function Entity:SelectWeightedSequence(act) end
 
 ---![(Shared)](https://github.com/user-attachments/assets/a356f942-57d7-4915-a8cc-559870a980fc) Returns the sequence ID corresponding to given activity ID, and uses the provided seed for random selection. The seed should be the same server-side and client-side if used in a predicted environment.
@@ -4028,7 +4049,7 @@ function Entity:SelectWeightedSequence(act) end
 ---[View wiki](https://wiki.facepunch.com/gmod/Entity:SelectWeightedSequenceSeeded)
 ---@param act number The activity ID, see Enums/ACT.
 ---@param seed number The seed to use for randomly selecting a sequence in the case the activity ID has multiple sequences bound to it. Entity:SelectWeightedSequence uses the same seed as util.SharedRandom internally for this.
----@return number # The sequence ID
+---@return number # The sequence ID, or `-1` if not found.
 function Entity:SelectWeightedSequenceSeeded(act, seed) end
 
 ---![(Shared)](https://github.com/user-attachments/assets/a356f942-57d7-4915-a8cc-559870a980fc) Sends sequence animation to the view model. It is recommended to use this for view model animations, instead of [Entity:ResetSequence](https://wiki.facepunch.com/gmod/Entity:ResetSequence).
@@ -4323,7 +4344,9 @@ function Entity:SetEntity(name, entity) end
 ---![(Shared)](https://github.com/user-attachments/assets/a356f942-57d7-4915-a8cc-559870a980fc) Sets the position an entity's eyes look toward. This works as an override for default behavior. Set to `0,0,0` to disable the override.
 ---
 ---[View wiki](https://wiki.facepunch.com/gmod/Entity:SetEyeTarget)
----@param pos Vector If NPC, the **world position** for the entity to look towards, for Ragdolls, a **local position** in front of their `eyes` attachment.
+---@param pos Vector For NPCs and all other entities except ragdolls - the **world position** for the entity to look towards
+---
+--- For ragdolls specifically - a **local position** in front of their `eyes` attachment.
 function Entity:SetEyeTarget(pos) end
 
 ---![(Shared)](https://github.com/user-attachments/assets/a356f942-57d7-4915-a8cc-559870a980fc) Sets the scale of all the flexes of this entity. See [Entity:SetFlexWeight](https://wiki.facepunch.com/gmod/Entity:SetFlexWeight).
@@ -4340,7 +4363,11 @@ function Entity:SetFlexScale(scale) end
 ---
 ---[View wiki](https://wiki.facepunch.com/gmod/Entity:SetFlexWeight)
 ---@param flex number The ID of the flex to modify weight of.  The range is between `0` and Entity:GetFlexNum - 1.
----@param weight number The new weight to set. See Entity:GetFlexBounds for the model-defined input range.
+---@param weight number The new weight to set.
+---
+--- The range is [0,1] for entities with Entity:HasFlexManipulatior, and the model-defined input range otherwise (Entity:GetFlexBounds)
+---
+--- Exceeding the range is allowed, and will amplify the effect (to possibly bad results), exactly like Entity:SetFlexScale does.
 function Entity:SetFlexWeight(flex, weight) end
 
 ---![(Shared)](https://github.com/user-attachments/assets/a356f942-57d7-4915-a8cc-559870a980fc) Sets friction multiplier for this entity when sliding against a surface. Entities default to 1 (100%) and can be higher.
@@ -4356,8 +4383,6 @@ function Entity:SetFriction(friction) end
 ---![(Shared)](https://github.com/user-attachments/assets/a356f942-57d7-4915-a8cc-559870a980fc) Sets the gravity multiplier of the entity.
 ---
 --- This may not affect affect all entities, but does affect players, and entities with [MOVETYPE_FLYGRAVITY](https://wiki.facepunch.com/gmod/Enums/MOVETYPE#MOVETYPE_FLYGRAVITY), such as projectiles.
----
---- This function is not predicted or networked.
 ---
 ---[View wiki](https://wiki.facepunch.com/gmod/Entity:SetGravity)
 ---@param multiplier number By how much to multiply the gravity. `1` is normal gravity, `0.5` is half-gravity, etc.
@@ -4396,11 +4421,9 @@ function Entity:SetIK(useIK) end
 
 ---![(Shared)](https://github.com/user-attachments/assets/a356f942-57d7-4915-a8cc-559870a980fc) Sets Hammer key values on an entity.
 ---
---- You can look up which entities have what key values on the [Valve Developer Community](https://developer.valvesoftware.com/wiki/) on entity pages.
+--- You can look up which entities have what key values on the [Valve Developer Community](https://developer.valvesoftware.com/wiki/) on entity pages. A  list of basic entities can be found [here](https://developer.valvesoftware.com/wiki/List_of_entities).
 ---
---- A  list of basic entities can be found [here](https://developer.valvesoftware.com/wiki/List_of_entities).
----
---- Alternatively you can look at the .fgd files shipped with Garry's Mod in the bin/ folder with a text editor to see the key values as they appear in Hammer.
+--- Alternatively you can look at the `.fgd` files shipped with Garry's Mod in the `bin/` folder with a text editor to see the key values as they appear in Hammer.
 ---
 ---[View wiki](https://wiki.facepunch.com/gmod/Entity:SetKeyValue)
 ---@param key string The internal key name
@@ -4616,21 +4639,19 @@ function Entity:SetModel(modelName) end
 ---@param modelname string The new model name.
 function Entity:SetModelName(modelname) end
 
----![(Shared)](https://github.com/user-attachments/assets/a356f942-57d7-4915-a8cc-559870a980fc) Scales the model of the entity, if the entity is a [Player](https://wiki.facepunch.com/gmod/Player) or an [NPC](https://wiki.facepunch.com/gmod/NPC) the hitboxes will be scaled as well.
+---![(Shared)](https://github.com/user-attachments/assets/a356f942-57d7-4915-a8cc-559870a980fc) Uniformly scales the model of the entity, if the entity is a [Player](https://wiki.facepunch.com/gmod/Player) or an [NPC](https://wiki.facepunch.com/gmod/NPC) the hitboxes will be scaled as well.
 ---
---- For some entities, calling [Entity:Activate](https://wiki.facepunch.com/gmod/Entity:Activate) after this will scale the collision bounds and [PhysObj](https://wiki.facepunch.com/gmod/PhysObj) as well; be wary as there's no optimization being done internally and highly complex collision models might crash the server.
+--- To resize the entity non-uniformly, along any axis, use [Entity:EnableMatrix](https://wiki.facepunch.com/gmod/Entity:EnableMatrix) instead.
 ---
---- This is the same system used in TF2 for the Mann Vs Machine robots.
+--- For some entities (Such as `prop_physics` and `anim` type [Scripted Entities](https://wiki.facepunch.com/gmod/Scripted_Entities)), calling [Entity:Activate](https://wiki.facepunch.com/gmod/Entity:Activate) after this will scale the collision bounds and [PhysObj](https://wiki.facepunch.com/gmod/PhysObj) as well; be wary as there's no optimization being done internally and highly complex collision models might crash the server.
 ---
---- To resize the entity along any axis, use [Entity:EnableMatrix](https://wiki.facepunch.com/gmod/Entity:EnableMatrix) instead.
----
---- Client-side trace detection seems to mess up if deltaTime is set to anything but zero. A very small decimal can be used instead of zero to solve this issue.
+--- Client-side trace detection seems to mess up if `deltaTime` is set to anything but zero. A very small decimal can be used instead of zero to solve this issue.
 ---
 --- If your old scales are wrong, use [Entity:SetLegacyTransform](https://wiki.facepunch.com/gmod/Entity:SetLegacyTransform) as a quick fix.
 ---
 --- **NOTE**: If you do not want the physics to be affected by [Entity:Activate](https://wiki.facepunch.com/gmod/Entity:Activate), you can use [Entity:ManipulateBoneScale](https://wiki.facepunch.com/gmod/Entity:ManipulateBoneScale)`( 0, Vector( scale, scale, scale ) )` instead.
 ---
---- This does not scale procedural bones and disables IK.
+--- This disables IK.
 ---
 ---[View wiki](https://wiki.facepunch.com/gmod/Entity:SetModelScale)
 ---@param scale number A float to scale the model by. 0 will not draw anything. A number less than 0 will draw the model inverted.
@@ -5300,7 +5321,7 @@ function Entity:SetNWVector(key, value) end
 ---@param owner? Entity The entity to be set as owner.
 function Entity:SetOwner(owner) end
 
----![(Shared)](https://github.com/user-attachments/assets/a356f942-57d7-4915-a8cc-559870a980fc) Sets the parent of this entity, making it move with its parent. This will make the child entity non solid, nothing can interact with them, including traces.
+---![(Shared)](https://github.com/user-attachments/assets/a356f942-57d7-4915-a8cc-559870a980fc) Sets the parent of this entity, making it move with its parent. This will make the child entity non solid, nothing can interact with them, including traces (but [util.TraceHull](https://wiki.facepunch.com/gmod/util.TraceHull) will work).
 ---
 --- All children of the parent get removed whenever it gets removed.
 ---
@@ -5353,7 +5374,11 @@ function Entity:SetPhysConstraintObjects(Phys1, Phys2) end
 ---@param timeLimit? number Time in seconds until the entity forgets its physics attacker and prevents it from getting the kill credit.
 function Entity:SetPhysicsAttacker(ent, timeLimit) end
 
----![(Shared)](https://github.com/user-attachments/assets/a356f942-57d7-4915-a8cc-559870a980fc) Allows you to set how fast an entity's animation will play, with 1.0 being the default speed.
+---![(Shared)](https://github.com/user-attachments/assets/a356f942-57d7-4915-a8cc-559870a980fc) Allows you to set how fast an entity's animation will play,
+--- with 1.0 being the default speed.
+---
+--- **NOTE**: This function does not affect gestures.
+--- 	Use [Entity:SetLayerPlaybackRate](https://wiki.facepunch.com/gmod/Entity:SetLayerPlaybackRate) instead.
 ---
 ---[View wiki](https://wiki.facepunch.com/gmod/Entity:SetPlaybackRate)
 ---@param fSpeed number How fast the animation will play.
@@ -5495,7 +5520,7 @@ function Entity:SetRenderMode(renderMode) end
 ---@param newOrigin? Vector The new origin in world coordinates where the Entity's model will now be rendered at. To disable the override, set to nil.
 function Entity:SetRenderOrigin(newOrigin) end
 
----![(Shared)](https://github.com/user-attachments/assets/a356f942-57d7-4915-a8cc-559870a980fc) Sets a save value for an entity. You can see a full list of an entity's save values by creating it and printing [Entity:GetSaveTable](https://wiki.facepunch.com/gmod/Entity:GetSaveTable)().
+---![(Shared)](https://github.com/user-attachments/assets/a356f942-57d7-4915-a8cc-559870a980fc) Sets a save value for an entity. You can see a full list of an entity's save values by creating it and printing [Entity:GetSaveTable](https://wiki.facepunch.com/gmod/Entity:GetSaveTable).
 ---
 --- See [Entity:GetInternalVariable](https://wiki.facepunch.com/gmod/Entity:GetInternalVariable) for the opposite of this function.
 ---
@@ -5587,6 +5612,8 @@ function Entity:SetSpawnFlags(flags) end
 ---![(Shared)](https://github.com/user-attachments/assets/a356f942-57d7-4915-a8cc-559870a980fc) Overrides a single material on the model of this entity.
 ---
 --- To set a Lua material created with [Global.CreateMaterial](https://wiki.facepunch.com/gmod/Global.CreateMaterial), just prepend a `!` to the material name.
+---
+--- 	The index argument limit seems to be larger than 0 to 31.
 ---
 --- The server's value takes priority on the client.
 ---
@@ -5960,8 +5987,8 @@ function Entity:TestCollision(startpos, delta, isbox, extents, mask) end
 --- **NOTE**: The function won't take in to account [Global.AddOriginToPVS](https://wiki.facepunch.com/gmod/Global.AddOriginToPVS) and the like.
 ---
 ---[View wiki](https://wiki.facepunch.com/gmod/Entity:TestPVS)
----@param testPoint any Entity or Vector to test against. If an entity is given, this function will test using its bounding box.
----@return boolean # True if the testPoint is within our PVS.
+---@param testPoint Vector|Entity Entity or Vector to test against. If an entity is given, this function will test using its bounding box.
+---@return boolean # `true` if the testPoint is within our PVS.
 function Entity:TestPVS(testPoint) end
 
 ---![(Shared)](https://github.com/user-attachments/assets/a356f942-57d7-4915-a8cc-559870a980fc) Called every frame on the client.
@@ -5972,7 +5999,7 @@ function Entity:TestPVS(testPoint) end
 --- You can force it to run at servers tickrate using the example below.
 ---
 ---[View wiki](https://wiki.facepunch.com/gmod/ENTITY:Think)
----@return boolean # Return `true` if you used Entity:NextThink to override the next execution time.
+---@return boolean # Return `true` if you used Entity:NextThink to override the next execution time. Otherwise it will be reset to `CurTime() + 0.2`.
 function Entity:Think() end
 
 ---![(Server)](https://github.com/user-attachments/assets/d8fbe13a-6305-4e16-8698-5be874721ca1) Called every tick for every entity being "touched". Touching is usually detected via AABB intersection checks using entity's [collision bounds](https://wiki.facepunch.com/gmod/Entity:GetCollisionBounds).
@@ -6193,12 +6220,12 @@ function Entity:WorldSpaceCenter() end
 ---
 ---[View wiki](https://wiki.facepunch.com/gmod/Entity:WorldToLocal)
 ---@param wpos Vector A worldspace vector.
----@return Vector # The correspondent local space vector.
+---@return Vector # The corresponding local space vector.
 function Entity:WorldToLocal(wpos) end
 
 ---![(Shared)](https://github.com/user-attachments/assets/a356f942-57d7-4915-a8cc-559870a980fc) Translates a worldspace angle into an angle relative to the entity's coordinate system.
 ---
 ---[View wiki](https://wiki.facepunch.com/gmod/Entity:WorldToLocalAngles)
 ---@param ang Angle A worldspace angle.
----@return Angle # The correspondent local space angle.
+---@return Angle # The corresponding local space angle.
 function Entity:WorldToLocalAngles(ang) end

@@ -3876,6 +3876,8 @@ COLLISION_GROUP_NPC_SCRIPTED = 19
 COLLISION_GROUP_WORLD = 20
 --- Amount of COLLISION_GROUP_ enumerations
 LAST_SHARED_COLLISION_GROUP = 21
+--- Half-Life 2 exclusive collision group, acts similarly to `COLLISION_GROUP_PROJECTILE` but is also ignored by player movement.
+COLLISION_GROUP_HL2_SPIT = 22
 
 ---@alias COLLISION_GROUP
 ---| `COLLISION_GROUP_NONE`
@@ -3900,6 +3902,7 @@ LAST_SHARED_COLLISION_GROUP = 21
 ---| `COLLISION_GROUP_NPC_SCRIPTED`
 ---| `COLLISION_GROUP_WORLD`
 ---| `LAST_SHARED_COLLISION_GROUP`
+---| `COLLISION_GROUP_HL2_SPIT`
 
 ---![(Server)](https://github.com/user-attachments/assets/d8fbe13a-6305-4e16-8698-5be874721ca1) Enumerations for NPC conditions, used by [NPC:SetCondition](https://wiki.facepunch.com/gmod/NPC:SetCondition). Serverside only.
 ---
@@ -4274,25 +4277,26 @@ DOF_SPACING = 512
 EF_BONEMERGE = 1
 --- For use with EF_BONEMERGE. If this is set, then it places this ents origin at its parent and uses the parent's bbox + the max extents of the aiment. Otherwise, it sets up the parent's bones every frame to figure out where to place the aiment, which is inefficient because it'll setup the parent's bones even if the parent is not in the PVS.
 EF_BONEMERGE_FASTCULL = 128
---- DLIGHT centered at entity origin
+--- DLIGHT centered at entity origin.
 EF_BRIGHTLIGHT = 2
---- Player flashlight
+--- Player flashlight.
 EF_DIMLIGHT = 4
---- Don't interpolate the next frame
+--- Seems to have no effect. Has been replaced with [C_BaseEntity::IsNoInterpolationFrame()](https://github.com/ValveSoftware/source-sdk-2013/blob/master/src/game/client/c_baseentity.h#L1331-L1332).Don't interpolate the next frame.
+---@deprecated Seems to have no effect. Has been replaced with [C_BaseEntity::IsNoInterpolationFrame()](https://github.com/ValveSoftware/source-sdk-2013/blob/master/src/game/client/c_baseentity.h#L1331-L1332).
 EF_NOINTERP = 8
---- Disables shadow
+--- Disables shadow.
 EF_NOSHADOW = 16
 --- Prevents the entity from drawing and networking.
 EF_NODRAW = 32
---- Don't receive shadows
+--- Don't receive shadows.
 EF_NORECEIVESHADOW = 64
---- Makes the entity blink
+--- Makes the entity blink.
 EF_ITEM_BLINK = 256
 --- Always assume that the parent entity is animating.
 EF_PARENT_ANIMATES = 512
 --- Internal flag that is set by [Entity:FollowBone](https://wiki.facepunch.com/gmod/Entity:FollowBone).
 EF_FOLLOWBONE = 1024
---- Makes the entity not accept being lit by projected textures, including the player's flashlight.
+--- GMod-specific. Makes the entity not accept being lit by projected textures, including the player's flashlight.
 EF_NOFLASHLIGHT = 8192
 
 ---@alias EF
@@ -4415,11 +4419,11 @@ EFL_NO_DAMAGE_FORCES = -2147483648
 FCVAR_ARCHIVE = 128
 --- Save the [ConVar](https://wiki.facepunch.com/gmod/ConVar) value into config.vdf on XBox
 FCVAR_ARCHIVE_XBOX = 16777216
---- Requires sv_cheats to be enabled to change the [ConVar](https://wiki.facepunch.com/gmod/ConVar) or run the command
+--- Requires `sv_cheats` to be enabled to change the [ConVar](https://wiki.facepunch.com/gmod/ConVar) or run the command
 ---
 --- Reported as "cheat" by `cvarlist`
 FCVAR_CHEAT = 16384
---- IVEngineClient::ClientCmd is allowed to execute this command
+--- `IVEngineClient::ClientCmd` is allowed to execute this command
 ---
 --- Reported as "clientcmd_can_execute" by `cvarlist`
 FCVAR_CLIENTCMD_CAN_EXECUTE = 1073741824
@@ -4433,7 +4437,7 @@ FCVAR_CLIENTDLL = 8
 ---
 --- Reported as "demo" by `cvarlist`
 FCVAR_DEMO = 65536
---- Opposite of FCVAR_DEMO, ensures the [ConVar](https://wiki.facepunch.com/gmod/ConVar) is not recorded in demos
+--- Opposite of [FCVAR_DEMO](https://wiki.facepunch.com/gmod/#FCVAR_DEMO), ensures the [ConVar](https://wiki.facepunch.com/gmod/ConVar) is not recorded in demos
 ---
 --- Reported as "norecord" by `cvarlist`
 FCVAR_DONTRECORD = 131072
@@ -4463,15 +4467,15 @@ FCVAR_NONE = 0
 FCVAR_NOTIFY = 256
 --- Makes the [ConVar](https://wiki.facepunch.com/gmod/ConVar) not changeable while connected to a server or in singleplayer
 FCVAR_NOT_CONNECTED = 4194304
---- Forces the [ConVar](https://wiki.facepunch.com/gmod/ConVar) to only have printable characters ( No control characters )
+--- Forces the [ConVar](https://wiki.facepunch.com/gmod/ConVar) to only have printable characters (No control characters)
 ---
 --- Reported as "print" by `cvarlist`
 FCVAR_PRINTABLEONLY = 1024
---- Makes the [ConVar](https://wiki.facepunch.com/gmod/ConVar) value hidden from all clients ( For example sv_password )
+--- Makes the [ConVar](https://wiki.facepunch.com/gmod/ConVar) value hidden from all clients (For example `sv_password`)
 ---
 --- Reported as "prot" by `cvarlist`
 FCVAR_PROTECTED = 32
---- For serverside [ConVar](https://wiki.facepunch.com/gmod/ConVar)s, it will send its value to all clients. The [ConVar](https://wiki.facepunch.com/gmod/ConVar) with the same name must also exist on the client!
+--- For serverside [ConVar](https://wiki.facepunch.com/gmod/ConVar)s, it will enforce its value on all clients. The [ConVar](https://wiki.facepunch.com/gmod/ConVar) with the same name must also exist on the client!
 ---
 --- Reported as "rep" by `cvarlist`
 FCVAR_REPLICATED = 8192
@@ -4489,7 +4493,7 @@ FCVAR_SPONLY = 64
 ---
 --- Reported as "log" by `cvarlist`
 FCVAR_UNLOGGED = 2048
---- If this is set, the convar will become anonymous and won't show up in the 'find' results.
+--- If this is set, the convar will become anonymous and won't show up in the `find` results.
 FCVAR_UNREGISTERED = 1
 --- For clientside commands, sends the value to the server
 ---
@@ -4917,6 +4921,7 @@ HULL_MEDIUM_TALL = 9
 ---| `HULL_LARGE_CENTERED`
 ---| `HULL_MEDIUM_TALL`
 
+---
 IMAGE_FORMAT_DEFAULT = -1
 --- Red, Green, Blue, Alpha, 8 bit per pixel.
 IMAGE_FORMAT_RGBA8888 = 0
@@ -4936,32 +4941,6 @@ IMAGE_FORMAT_BGRA8888 = 12
 IMAGE_FORMAT_RGBA16161616 = 25
 --- RGBA, but floating point 16 bits per pixel. Is used for "Float mode" HDR.
 IMAGE_FORMAT_RGBA16161616F = 24
---- Grayscale format (black and white), 8 bits per pixel. Not working on Proton.
-IMAGE_FORMAT_I8 = 5
---- Grayscale format (black and white) with alpha support, 8 bits per pixel/channel. Not working on Proton.
-IMAGE_FORMAT_IA88 = 6
---- Unknown legacy format. 8 bit alpha? Same as `I8` besides assigned meaning/name to the channel?
-IMAGE_FORMAT_A8 = 8
---- Unknown legacy format. Same as `BGRA8888`, but without defining meaning to the 4th channel?
-IMAGE_FORMAT_BGRX8888 = 16
---- `RGB565`, but reverse color order. Legacy format.
-IMAGE_FORMAT_BGR565 = 17
---- Unknown legacy format.
-IMAGE_FORMAT_BGRX5551 = 18
---- Unknown legacy format.
-IMAGE_FORMAT_BGRA4444 = 19
---- Unknown legacy format.
-IMAGE_FORMAT_BGRA5551 = 21
---- Single color channel, 32bit float per pixel. Works only with `mat_disable_d3d9ex 0`. Not working on dx 92.
-IMAGE_FORMAT_R32F = 27
---- 32bit floating point RGBA. Works only with `mat_disable_d3d9ex 0`
-IMAGE_FORMAT_RGBA32323232F = 29
---- Compressed texture format. See https://en.wikipedia.org/wiki/S3_Texture_Compression.
-IMAGE_FORMAT_DXT1 = 13
---- Compressed texture format. Do not use. See https://en.wikipedia.org/wiki/S3_Texture_Compression.
-IMAGE_FORMAT_DXT3 = 14
---- Compressed texture format. Better quality than DXT1, supports alpha. See https://en.wikipedia.org/wiki/S3_Texture_Compression.
-IMAGE_FORMAT_DXT5 = 15
 
 ---@alias IMAGE_FORMAT
 ---| `IMAGE_FORMAT_DEFAULT`
@@ -4974,19 +4953,6 @@ IMAGE_FORMAT_DXT5 = 15
 ---| `IMAGE_FORMAT_BGRA8888`
 ---| `IMAGE_FORMAT_RGBA16161616`
 ---| `IMAGE_FORMAT_RGBA16161616F`
----| `IMAGE_FORMAT_I8`
----| `IMAGE_FORMAT_IA88`
----| `IMAGE_FORMAT_A8`
----| `IMAGE_FORMAT_BGRX8888`
----| `IMAGE_FORMAT_BGR565`
----| `IMAGE_FORMAT_BGRX5551`
----| `IMAGE_FORMAT_BGRA4444`
----| `IMAGE_FORMAT_BGRA5551`
----| `IMAGE_FORMAT_R32F`
----| `IMAGE_FORMAT_RGBA32323232F`
----| `IMAGE_FORMAT_DXT1`
----| `IMAGE_FORMAT_DXT3`
----| `IMAGE_FORMAT_DXT5`
 
 --- +attack bound key ( Default: Left Mouse Button )
 IN_ATTACK = 1
@@ -5396,7 +5362,7 @@ kRenderFxPulseFast = 2
 kRenderFxPulseSlowWide = 3
 --- Quickly pulses the entitys transparency, +-60 to the current alpha.
 kRenderFxPulseFastWide = 4
---- Slowly fades away the entity, making it completely invisible.
+--- Slowly fades away the entity, making it completely invisible over 3 seconds.
 ---
 --- Starts from whatever alpha the entity currently has set.
 kRenderFxFadeSlow = 5

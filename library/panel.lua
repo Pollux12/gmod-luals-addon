@@ -767,8 +767,8 @@ function Panel:GetSelectionCanvas() end
 --- If you require both the panel's position and size, consider using [Panel:GetBounds](https://wiki.facepunch.com/gmod/Panel:GetBounds) instead.
 ---
 ---[View wiki](https://wiki.facepunch.com/gmod/Panel:GetSize)
----@return number # width
----@return number # height
+---@return number # The panel's width. (Panel:GetWide)
+---@return number # The panel's height (Panel:GetTall)
 function Panel:GetSize() end
 
 ---![(Client and menu)](https://github.com/user-attachments/assets/25d1a1c8-4288-4a51-9867-5e3bb51b9981) Returns the table for the derma skin currently being used by this panel object.
@@ -1242,6 +1242,7 @@ function Panel:LerpPositions(speed, easeOut) end
 ---
 ---[View wiki](https://wiki.facepunch.com/gmod/Panel:LoadControlsFromFile)
 ---@param path string The path to load the controls from.
+---@deprecated No longer does anything.
 function Panel:LoadControlsFromFile(path) end
 
 ---![(Client and menu)](https://github.com/user-attachments/assets/25d1a1c8-4288-4a51-9867-5e3bb51b9981) **INTERNAL**: This is used internally - although you're able to use it you probably shouldn't.
@@ -1250,6 +1251,7 @@ function Panel:LoadControlsFromFile(path) end
 ---
 ---[View wiki](https://wiki.facepunch.com/gmod/Panel:LoadControlsFromString)
 ---@param data string The data to load controls from. Format unknown.
+---@deprecated No longer does anything.
 function Panel:LoadControlsFromString(data) end
 
 ---![(Client)](https://github.com/user-attachments/assets/a5f6ba64-374d-42f0-b2f4-50e5c964e808) Called after [Panel:SetCookieName](https://wiki.facepunch.com/gmod/Panel:SetCookieName) is called on this panel to apply the just loaded cookie values for this panel.
@@ -1834,7 +1836,7 @@ function Panel:ResetAllFades(hold, expiredOnly, newSustain) end
 ---
 --- **NOTE**: The Awesomium web renderer automatically delays the code execution if the document is not ready, but the Chromium web renderer does not!
 ---
---- This means that with Chromium, you cannot JavaScript run code immediatly after calling [Panel:SetHTML](https://wiki.facepunch.com/gmod/Panel:SetHTML) or [Panel:OpenURL](https://wiki.facepunch.com/gmod/Panel:OpenURL). You should wait for the events [PANEL:OnDocumentReady](https://wiki.facepunch.com/gmod/PANEL:OnDocumentReady) or [PANEL:OnFinishLoadingDocument](https://wiki.facepunch.com/gmod/PANEL:OnFinishLoadingDocument) to be triggered before proceeding, otherwise you may manipulate an empty / incomplete document.
+--- This means that with Chromium, you cannot JavaScript run code immediatly after calling [Panel:SetHTML](https://wiki.facepunch.com/gmod/Panel:SetHTML) or [Panel:OpenURL](https://wiki.facepunch.com/gmod/Panel:OpenURL). You should wait for the events [HTML:OnDocumentReady](https://wiki.facepunch.com/gmod/HTML:OnDocumentReady) or [HTML:OnFinishLoadingDocument](https://wiki.facepunch.com/gmod/HTML:OnFinishLoadingDocument) to be triggered before proceeding, otherwise you may manipulate an empty / incomplete document.
 ---
 ---[View wiki](https://wiki.facepunch.com/gmod/Panel:RunJavascript)
 ---@param js string Specify JavaScript code to be executed.
@@ -2078,7 +2080,9 @@ function Panel:SetDrawOnTop(drawOnTop) end
 ---@param height number The height of the drop area.
 function Panel:SetDropTarget(x, y, width, height) end
 
----![(Client and menu)](https://github.com/user-attachments/assets/25d1a1c8-4288-4a51-9867-5e3bb51b9981) Sets the enabled state of a disable-able panel object, such as a [DButton](https://wiki.facepunch.com/gmod/DButton) or [DTextEntry](https://wiki.facepunch.com/gmod/DTextEntry).
+---![(Client and menu)](https://github.com/user-attachments/assets/25d1a1c8-4288-4a51-9867-5e3bb51b9981) Sets the enabled state of a panel object that supports being disabled, such as a [DButton](https://wiki.facepunch.com/gmod/DButton) or [DTextEntry](https://wiki.facepunch.com/gmod/DTextEntry).
+---
+--- Disabled panels cannot be interacted with, and have a different appearance to indicate this.
 ---
 --- See [Panel:IsEnabled](https://wiki.facepunch.com/gmod/Panel:IsEnabled) for a function that retrieves the "enabled" state of a panel.
 ---
@@ -2148,6 +2152,7 @@ function Panel:SetFontInternal(fontName) end
 ---![(Client and menu)](https://github.com/user-attachments/assets/25d1a1c8-4288-4a51-9867-5e3bb51b9981) Sets the height of the panel.
 ---
 --- Calls [PANEL:OnSizeChanged](https://wiki.facepunch.com/gmod/PANEL:OnSizeChanged) and marks this panel for layout ([Panel:InvalidateLayout](https://wiki.facepunch.com/gmod/Panel:InvalidateLayout)).
+--- Automatically rounds the height down
 ---
 --- See also [Panel:SetSize](https://wiki.facepunch.com/gmod/Panel:SetSize).
 ---
@@ -2285,7 +2290,7 @@ function Panel:SetPopupStayAtBack(stayAtBack) end
 ---@param posY number The y coordinate of the position.
 function Panel:SetPos(posX, posY) end
 
----![(Client and menu)](https://github.com/user-attachments/assets/25d1a1c8-4288-4a51-9867-5e3bb51b9981) Sets whenever the panel should be rendered in the next screenshot.
+---![(Client and menu)](https://github.com/user-attachments/assets/25d1a1c8-4288-4a51-9867-5e3bb51b9981) Sets whenever the panel should be rendered in a screenshot. (`jpeg` or `screenshot` commands, Camera SWEP)
 ---
 ---[View wiki](https://wiki.facepunch.com/gmod/Panel:SetRenderInScreenshots)
 ---@param renderInScreenshot boolean Whether to render in the screenshot or not.
@@ -2312,6 +2317,7 @@ function Panel:SetSelectionCanvas(set) end
 ---![(Client and menu)](https://github.com/user-attachments/assets/25d1a1c8-4288-4a51-9867-5e3bb51b9981) Sets the size of the panel.
 ---
 --- Calls [PANEL:OnSizeChanged](https://wiki.facepunch.com/gmod/PANEL:OnSizeChanged) and marks this panel for layout ([Panel:InvalidateLayout](https://wiki.facepunch.com/gmod/Panel:InvalidateLayout)).
+--- Automatically rounds the width and height down
 ---
 --- See also [Panel:SetWidth](https://wiki.facepunch.com/gmod/Panel:SetWidth) and [Panel:SetHeight](https://wiki.facepunch.com/gmod/Panel:SetHeight).
 ---
@@ -2478,6 +2484,7 @@ function Panel:SetWide(width) end
 ---![(Client and menu)](https://github.com/user-attachments/assets/25d1a1c8-4288-4a51-9867-5e3bb51b9981) Sets the width of the panel.
 ---
 --- Calls [PANEL:OnSizeChanged](https://wiki.facepunch.com/gmod/PANEL:OnSizeChanged) and marks this panel for layout ([Panel:InvalidateLayout](https://wiki.facepunch.com/gmod/Panel:InvalidateLayout)).
+--- Automatically rounds the width down
 ---
 --- See also [Panel:SetSize](https://wiki.facepunch.com/gmod/Panel:SetSize).
 ---

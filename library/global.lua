@@ -28,16 +28,16 @@ function _G.AddBackgroundImage(path) end
 ---[View wiki](https://wiki.facepunch.com/gmod/Global.AddConsoleCommand)
 ---@param name string The name of the console command to add.
 ---@param helpText string The help text.
----@param flags FCVAR Concommand flags using Enums/FCVAR
+---@param flags FCVAR Concommand flags using Enums/FCVAR.
 function _G.AddConsoleCommand(name, helpText, flags) end
 
 ---![(Shared)](https://github.com/user-attachments/assets/a356f942-57d7-4915-a8cc-559870a980fc) Marks a Lua file to be sent to clients when they join the server. Doesn't do anything on the client - this means you can use it in a shared file without problems.
 ---
---- **WARNING**: If the file trying to be added is empty, an error will occur, and the file will not be sent to the client
+--- **WARNING**: If the file trying to be added is empty, an error will occur, and the file will not be sent to the client.
 ---
 --- The string cannot have whitespace.
 ---
---- **NOTE**: This function is not needed for scripts located in these paths because they are automatically sent to clients.
+--- **NOTE**: This function is not needed for scripts located in these paths because they are automatically sent to clients:
 --- 	**lua/matproxy/**
 --- 	**lua/postprocess/**
 --- 	**lua/vgui/**
@@ -45,7 +45,7 @@ function _G.AddConsoleCommand(name, helpText, flags) end
 --- 	**lua/autorun/**
 --- 	**lua/autorun/client/**
 ---
---- 	You can add up to **8192** files. Each file can be up to **64KB** compressed (LZMA)
+--- 	You can add up to **8192** files. Each file can be up to **64KB** compressed (LZMA).
 ---
 ---[View wiki](https://wiki.facepunch.com/gmod/Global.AddCSLuaFile)
 ---@param file? string The name/path to the Lua file that should be sent, **relative to the garrysmod/lua folder**. If no parameter is specified, it sends the current file.
@@ -71,13 +71,13 @@ function _G.AddonMaterial(name) end
 function _G.AddOriginToPVS(position) end
 
 ---![(Client)](https://github.com/user-attachments/assets/a5f6ba64-374d-42f0-b2f4-50e5c964e808) This function creates a Custom Category in the Spawnlist. Use [Global.GenerateSpawnlistFromPath](https://wiki.facepunch.com/gmod/Global.GenerateSpawnlistFromPath) if you want to create a category with the contents of a folder.
---- 	**WARNING**: Using this function before [SANDBOX:PopulateContent](https://wiki.facepunch.com/gmod/SANDBOX:PopulateContent) has been called will result in an error
+--- 	**WARNING**: Using this function before [SANDBOX:PopulateContent](https://wiki.facepunch.com/gmod/SANDBOX:PopulateContent) has been called will result in an error.
 ---
 ---[View wiki](https://wiki.facepunch.com/gmod/Global.AddPropsOfParent)
----@param pnlContent Panel The SMContentPanel of the Node
----@param node Panel The Node
----@param parentid number The ParentID to use
----@param customProps table The Table with the Contents of the new Category
+---@param pnlContent Panel The SMContentPanel of the Node.
+---@param node Panel The Node.
+---@param parentid number The ParentID to use.
+---@param customProps table The Table with the Contents of the new Category.
 function _G.AddPropsOfParent(pnlContent, node, parentid, customProps) end
 
 ---![(Client)](https://github.com/user-attachments/assets/a5f6ba64-374d-42f0-b2f4-50e5c964e808) This function creates a World Tip, similar to the one shown when aiming at a Thruster where it shows you its force.
@@ -88,7 +88,7 @@ function _G.AddPropsOfParent(pnlContent, node, parentid, customProps) end
 ---
 --- See [SANDBOX:PaintWorldTips](https://wiki.facepunch.com/gmod/SANDBOX:PaintWorldTips) for more information.
 ---
---- **NOTE**: This function is only available in Sandbox and its derivatives
+--- **NOTE**: This function is only available in Sandbox and its derivatives.
 ---
 ---[View wiki](https://wiki.facepunch.com/gmod/Global.AddWorldTip)
 ---@param entindex? number **This argument is no longer used**; it has no effect on anything. You can use nil in this argument.
@@ -108,7 +108,7 @@ function _G.AddWorldTip(entindex, text, dieTime, pos, ent) end
 ---@param pitch? number The pitch value of the angle, in degrees.
 ---@param yaw? number The yaw value of the angle, in degrees.
 ---@param roll? number The roll value of the angle, in degrees.
----@return Angle # The newly created Angle
+---@return Angle # The newly created Angle.
 function _G.Angle(pitch, yaw, roll) end
 
 ---![(Shared and Menu)](https://github.com/user-attachments/assets/8f5230ff-38f7-493b-b9fc-cc70ffd5b3f4) Creates an [Angle](https://wiki.facepunch.com/gmod/Angle) object, representing a [Euler Angle](https://en.wikipedia.org/wiki/Euler_angles) made up of pitch, yaw, and roll components.
@@ -119,7 +119,7 @@ function _G.Angle(pitch, yaw, roll) end
 ---
 ---[View wiki](https://wiki.facepunch.com/gmod/Global.Angle)
 ---@param angle Angle Creates a new Angle that is a copy of the Angle passed in.
----@return Angle # The newly created Angle
+---@return Angle # The newly created Angle.
 function _G.Angle(angle) end
 
 ---![(Shared and Menu)](https://github.com/user-attachments/assets/8f5230ff-38f7-493b-b9fc-cc70ffd5b3f4) Creates an [Angle](https://wiki.facepunch.com/gmod/Angle) object, representing a [Euler Angle](https://en.wikipedia.org/wiki/Euler_angles) made up of pitch, yaw, and roll components.
@@ -132,7 +132,7 @@ function _G.Angle(angle) end
 ---@param angleString string Attempts to parse the input string from the Global.print format of an Angle.
 ---
 --- Returns an Angle with its pitch, yaw, and roll set to `0` if the string cannot be parsed.
----@return Angle # The newly created Angle
+---@return Angle # The newly created Angle.
 function _G.Angle(angleString) end
 
 ---![(Shared and Menu)](https://github.com/user-attachments/assets/8f5230ff-38f7-493b-b9fc-cc70ffd5b3f4) Returns an angle with a randomized pitch, yaw, and roll between min(inclusive), max(exclusive).
@@ -169,10 +169,10 @@ function _G.BroadcastLua(code) end
 ---
 ---[View wiki](https://wiki.facepunch.com/gmod/Global.BuildNetworkedVarsTable)
 ---@return table # Format:
---- * key = Entity for NWVars or number (always 0) for global vars
+--- * key = Entity for NWVars or number (always 0) for global vars.
 --- * value = table formatted as:
----   * key = string var name
----   * value = any type var value
+---   * key = string var name.
+---   * value = any type var value.
 function _G.BuildNetworkedVarsTable() end
 
 ---![(Menu)](https://github.com/user-attachments/assets/62703d98-767e-4cf2-89b3-390b1c2c5cd9) **INTERNAL**: This is used internally - although you're able to use it you probably shouldn't.
@@ -180,7 +180,7 @@ function _G.BuildNetworkedVarsTable() end
 --- Used internally to check if the current server the player is on can be added to favorites or not. Does not check if the server is ALREADY in the favorites.
 ---
 ---[View wiki](https://wiki.facepunch.com/gmod/Global.CanAddServerToFavorites)
----@return boolean # Can add to favorites
+---@return boolean # Can add to favorites?
 function _G.CanAddServerToFavorites() end
 
 ---![(Menu)](https://github.com/user-attachments/assets/62703d98-767e-4cf2-89b3-390b1c2c5cd9) Aborts joining of the server you are currently joining.
@@ -281,7 +281,7 @@ function _G.collectgarbage(action, arg) end
 --- Variable | Color (RGBA) |
 --- -----|------------|
 --- | color_white | Color(255, 255, 255, 255) |
---- | color_black | Color(0, 0, 255, 255) |
+--- | color_black | Color(0, 0, 0, 255) |
 --- | color_transparent | Color(255, 255, 255, 0) |
 ---
 --- 	**WARNING**: Under no circumstances should these variables be modified (by a Lerp or value modification). Some addons that use these values (e.g. color_white) will be affected by this change.
@@ -842,6 +842,8 @@ function _G.DynamicMaterial(materialPath, flags) end
 ---
 --- This does not create a unique object, but instead returns a shared reference. That means you cannot use two or more of these objects at once.
 ---
+--- **WARNING**: Any values previously set (Origin, Magnitude, Scale etc) will carry over to all future calls of this function, and may unexpectedly affect effects created via [util.Effect](https://wiki.facepunch.com/gmod/util.Effect).
+---
 ---[View wiki](https://wiki.facepunch.com/gmod/Global.EffectData)
 ---@return CEffectData # The CEffectData object.
 function _G.EffectData() end
@@ -1051,6 +1053,7 @@ function _G.Format(format, ...) end
 ---![(Shared)](https://github.com/user-attachments/assets/a356f942-57d7-4915-a8cc-559870a980fc) Returns the number of frames rendered since the game was launched.
 ---
 ---[View wiki](https://wiki.facepunch.com/gmod/Global.FrameNumber)
+---@return number # frame count
 function _G.FrameNumber() end
 
 ---![(Shared and Menu)](https://github.com/user-attachments/assets/8f5230ff-38f7-493b-b9fc-cc70ffd5b3f4) Returns the [Global.CurTime](https://wiki.facepunch.com/gmod/Global.CurTime)-based time in seconds it took to render the last frame.
@@ -1190,7 +1193,7 @@ function _G.GetConVar_Internal(name) end
 ---[View wiki](https://wiki.facepunch.com/gmod/Global.GetConVarNumber)
 ---@param name string Name of the ConVar to get.
 ---@return number # The ConVar's value.
----@deprecated Store the ConVar object retrieved with Global.GetConVar and call ConVar:GetInt or ConVar:GetFloat on it.
+---@deprecated Store the ConVar object retrieved with Global.GetConVar or use cvars.Number
 function _G.GetConVarNumber(name) end
 
 ---![(Shared and Menu)](https://github.com/user-attachments/assets/8f5230ff-38f7-493b-b9fc-cc70ffd5b3f4) Gets the string value ConVar with the specified name.
@@ -1198,7 +1201,7 @@ function _G.GetConVarNumber(name) end
 ---[View wiki](https://wiki.facepunch.com/gmod/Global.GetConVarString)
 ---@param name string Name of the ConVar to get.
 ---@return string # The ConVar's value.
----@deprecated Store the ConVar object retrieved with Global.GetConVar and call ConVar:GetString on it.
+---@deprecated Store the ConVar object retrieved with Global.GetConVar or use cvars.String.
 function _G.GetConVarString(name) end
 
 ---![(Menu)](https://github.com/user-attachments/assets/62703d98-767e-4cf2-89b3-390b1c2c5cd9) Returns the default loading screen URL (asset://garrysmod/html/loading.html)
@@ -1998,7 +2001,7 @@ function _G.LocalPlayer() end
 ---
 --- For the reverse of this function see [Global.WorldToLocal](https://wiki.facepunch.com/gmod/Global.WorldToLocal).
 ---
---- For working with an entity's local space vectors/angles you might want to use [Entity:LocalToWorld](https://wiki.facepunch.com/gmod/Entity:LocalToWorld)/[Entity:LocalToWorldAngles](https://wiki.facepunch.com/gmod/Entity:LocalToWorldAngles) instead.
+--- For working with an entity's local space vectors/angles you might consider using [Entity:LocalToWorld](https://wiki.facepunch.com/gmod/Entity:LocalToWorld)/[Entity:LocalToWorldAngles](https://wiki.facepunch.com/gmod/Entity:LocalToWorldAngles) instead.
 ---
 ---[View wiki](https://wiki.facepunch.com/gmod/Global.LocalToWorld)
 ---@param localPos Vector A vector from a local coordinate system.
@@ -2007,8 +2010,8 @@ function _G.LocalPlayer() end
 --- Pass a zero angle if you don't need to translate an angle.
 ---@param originPos Vector The origin of a global coordinate system, in worldspace coordinates.
 ---@param originAngle Angle The angles of a global coordinate system, as a worldspace angle.
----@return Vector # The correspondent worldspace vector of `localPos`.
----@return Angle # The correspondent worldspace angle of `localAng`.
+---@return Vector # The corresponding worldspace vector to `localPos`.
+---@return Angle # The corresponding worldspace angle to `localAng`.
 function _G.LocalToWorld(localPos, localAng, originPos, originAngle) end
 
 ---![(Client)](https://github.com/user-attachments/assets/a5f6ba64-374d-42f0-b2f4-50e5c964e808) Returns the main view angles, as they were at the start of the latest main view render.
@@ -2355,6 +2358,8 @@ function _G.PrecacheSentenceGroup(group) end
 ---
 --- Can only print up to `4096` characters at a time, and will stop at NULL character. (`"\0"`)
 ---
+--- See [Global.Msg](https://wiki.facepunch.com/gmod/Global.Msg) for alternative that doesn't force add a new line, and [Global.MsgC](https://wiki.facepunch.com/gmod/Global.MsgC) for adding colored text to the console.
+---
 ---[View wiki](https://wiki.facepunch.com/gmod/Global.print)
 ---@param ... any List of values to print.
 function _G.print(...) end
@@ -2622,20 +2627,24 @@ function _G.RunString(code, identifier, handleError) end
 ---![(Shared and Menu)](https://github.com/user-attachments/assets/8f5230ff-38f7-493b-b9fc-cc70ffd5b3f4) Alias of [Global.RunString](https://wiki.facepunch.com/gmod/Global.RunString).
 ---
 ---[View wiki](https://wiki.facepunch.com/gmod/Global.RunStringEx)
+---@param code string The code to execute.
+---@param identifier? string The name that should appear in any error messages caused by this code.
+---@param handleError? boolean If false, this function will return a string containing any error messages instead of throwing an error.
+---@return string # If handleError is false, the error message (if any).
 ---@deprecated Use Global.RunString instead.
-function _G.RunStringEx() end
+function _G.RunStringEx(code, identifier, handleError) end
 
----![(Shared and Menu)](https://github.com/user-attachments/assets/8f5230ff-38f7-493b-b9fc-cc70ffd5b3f4) Removes the given entity unless it is a player or the world entity
+---![(Shared and Menu)](https://github.com/user-attachments/assets/8f5230ff-38f7-493b-b9fc-cc70ffd5b3f4) Removes the given entity unless it is a player or the world entity.
 ---
 ---[View wiki](https://wiki.facepunch.com/gmod/Global.SafeRemoveEntity)
 ---@param ent Entity Entity to safely remove.
 function _G.SafeRemoveEntity(ent) end
 
----![(Shared and Menu)](https://github.com/user-attachments/assets/8f5230ff-38f7-493b-b9fc-cc70ffd5b3f4) Removes entity after delay using [Global.SafeRemoveEntity](https://wiki.facepunch.com/gmod/Global.SafeRemoveEntity)
+---![(Shared and Menu)](https://github.com/user-attachments/assets/8f5230ff-38f7-493b-b9fc-cc70ffd5b3f4) Removes entity after delay using [Global.SafeRemoveEntity](https://wiki.facepunch.com/gmod/Global.SafeRemoveEntity).
 ---
 ---[View wiki](https://wiki.facepunch.com/gmod/Global.SafeRemoveEntityDelayed)
----@param entity Entity Entity to be removed
----@param delay number Delay for entity removal in seconds
+---@param entity Entity Entity to be removed.
+---@param delay number Delay for entity removal in seconds.
 function _G.SafeRemoveEntityDelayed(entity, delay) end
 
 ---![(Menu)](https://github.com/user-attachments/assets/62703d98-767e-4cf2-89b3-390b1c2c5cd9) Sets the content of `addonpresets.txt` located in the `garrysmod/settings` folder. By default, this file stores your addon presets as JSON.
@@ -3107,12 +3116,19 @@ function _G.tobool(input) end
 ---@param map string Map to toggle favorite.
 function _G.ToggleFavourite(map) end
 
----![(Shared and Menu)](https://github.com/user-attachments/assets/8f5230ff-38f7-493b-b9fc-cc70ffd5b3f4) Attempts to convert the value to a number.
+---![(Shared and Menu)](https://github.com/user-attachments/assets/8f5230ff-38f7-493b-b9fc-cc70ffd5b3f4) Converts strings containing numbers into actual [number](https://wiki.facepunch.com/gmod/number)s.
+---
+--- Can also convert numbers from other [numerical bases](https://www.mathsisfun.com/numbers/bases.html) to base 10.
 ---
 ---[View wiki](https://wiki.facepunch.com/gmod/Global.tonumber)
----@param value any The value to convert. Can be a number or string.
----@param base? number The base used in the string. Can be any integer between 2 and 36, inclusive.
----@return number # The numeric representation of the value with the given base, or nil if the conversion failed.
+---@param value string The value to be converted.
+---
+--- This string can contain digits from `0` to `9` (inclusive) for numerical bases from `2` to `10` (inclusive), and from `0` to `z` for bases greater than `10`.
+---
+--- The maximum value depends on the specific base value provided, for example for base 3 `0, 1, 2` are permitted. For base 11, `0-9` and `a` are permitted.
+---@param base? number The numerical base of the digits in the input value.
+--- Must be an integer between `2` and `36` (inclusive)
+---@return number|nil # The base `10` number representation of the input value, or `nil` if the conversion failed.
 function _G.tonumber(value, base) end
 
 ---![(Shared and Menu)](https://github.com/user-attachments/assets/8f5230ff-38f7-493b-b9fc-cc70ffd5b3f4) Attempts to convert the value to a string. If the value is an object and its metatable has defined the __tostring metamethod, this will call that function.
@@ -3296,7 +3312,7 @@ function _G.Vector(vectorString) end
 ---@return Vector # The random direction vector.
 function _G.VectorRand(min, max) end
 
----![(Shared and Menu)](https://github.com/user-attachments/assets/8f5230ff-38f7-493b-b9fc-cc70ffd5b3f4) Identical to [Global.SysTime](https://wiki.facepunch.com/gmod/Global.SysTime).
+---![(Shared and Menu)](https://github.com/user-attachments/assets/8f5230ff-38f7-493b-b9fc-cc70ffd5b3f4) Identical to [Global.SysTime](https://wiki.facepunch.com/gmod/Global.SysTime). On Windows, will be the previous value of [Global.SysTime](https://wiki.facepunch.com/gmod/Global.SysTime).
 ---
 ---[View wiki](https://wiki.facepunch.com/gmod/Global.VGUIFrameTime)
 ---@deprecated Use the function Global.SysTime instead.
@@ -3336,8 +3352,8 @@ function _G.WorkshopFileBase(namespace, requiredTags) end
 ---@param angle Angle A worldspace angle.
 ---@param newSystemOrigin Vector The origin of the new coordinate system.
 ---@param newSystemAngles Angle The angles of the new coordinate system.
----@return Vector # The correspondent local space `position`
----@return Angle # The correspondent local space `angle`
+---@return Vector # The corresponding local space `position`
+---@return Angle # The corresponding local space `angle`
 function _G.WorldToLocal(position, angle, newSystemOrigin, newSystemAngles) end
 
 ---![(Shared and Menu)](https://github.com/user-attachments/assets/8f5230ff-38f7-493b-b9fc-cc70ffd5b3f4) Attempts to call the first function. If the execution succeeds, this returns `true` followed by the returns of the function. If execution fails, this returns `false` and the second function is called with the error message.
