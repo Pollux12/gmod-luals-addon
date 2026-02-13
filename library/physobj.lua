@@ -128,7 +128,7 @@ function PhysObj:EnableMotion(enable) end
 ---![(Shared)](https://github.com/user-attachments/assets/a356f942-57d7-4915-a8cc-559870a980fc) Returns the mins and max of the physics object Axis-Aligned Bounding Box.
 ---
 ---[View wiki](https://wiki.facepunch.com/gmod/PhysObj:GetAABB)
----@return Vector # The minimum extents of the bounding box.
+---@return Vector|nil # The minimum extents of the bounding box, or `nil` for runtime generated physics object.
 ---@return Vector # The maximum extents of the bounding box.
 function PhysObj:GetAABB() end
 

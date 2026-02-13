@@ -896,7 +896,8 @@ function _G.Either(condition, truevar, falsevar) end
 ---@param soundLevel? number The sound level of the sound, see Enums/SNDLVL
 ---@param soundFlags? number The flags of the sound, see Enums/SND
 ---@param pitch? number The pitch of the sound, 0-255
-function _G.EmitSentence(soundName, position, entity, channel, volume, soundLevel, soundFlags, pitch) end
+---@param DSP? number Digital Sound Processor for this sound.
+function _G.EmitSentence(soundName, position, entity, channel, volume, soundLevel, soundFlags, pitch, DSP) end
 
 ---![(Shared)](https://github.com/user-attachments/assets/a356f942-57d7-4915-a8cc-559870a980fc) Emits the specified sound at the specified position. See also [Entity:EmitSound](https://wiki.facepunch.com/gmod/Entity:EmitSound) if you wish to play sounds on a specific entity.
 ---
@@ -911,7 +912,7 @@ function _G.EmitSentence(soundName, position, entity, channel, volume, soundLeve
 --- This should either be a sound script name (sound.Add) or a file path relative to the `sound/` folder. (Make note that it's not sound**s**)
 ---@param position Vector The position where the sound is meant to play, which is also used for a network filter (`CPASAttenuationFilter`) to decide which players will hear the sound.
 ---@param entity? number The entity to emit the sound from. Can be an Entity:EntIndex or one of the following:
---- * `0` - Plays sound on the world (position set to `0,0,0`)
+--- * `0` - Plays sound on the world
 --- * `-1` - Plays sound on the local player (on server acts as `0`)
 --- * `-2` - Plays UI sound (position set to `0,0,0`, no spatial sound, on server acts as `0`)
 ---@param channel? CHAN The sound channel, see Enums/CHAN.

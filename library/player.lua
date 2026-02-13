@@ -679,9 +679,9 @@ function Player:GetCrouchedWalkSpeed() end
 ---@return CUserCmd # Last user commands
 function Player:GetCurrentCommand() end
 
----![(Shared)](https://github.com/user-attachments/assets/a356f942-57d7-4915-a8cc-559870a980fc) Gets the **actual** view offset which equals the difference between the players actual position and their view when standing.
+---![(Shared)](https://github.com/user-attachments/assets/a356f942-57d7-4915-a8cc-559870a980fc) Gets the current applied view offset, which transitions between the player's standing and ducked view offset depending on their duck state.
 ---
---- Do not confuse with [Player:GetViewOffset](https://wiki.facepunch.com/gmod/Player:GetViewOffset) and [Player:GetViewOffsetDucked](https://wiki.facepunch.com/gmod/Player:GetViewOffsetDucked)
+--- Do not confuse with [Player:GetViewOffset](https://wiki.facepunch.com/gmod/Player:GetViewOffset) and [Player:GetViewOffsetDucked](https://wiki.facepunch.com/gmod/Player:GetViewOffsetDucked), which always return the standing or ducked offset respectively.
 ---
 ---[View wiki](https://wiki.facepunch.com/gmod/Player:GetCurrentViewOffset)
 ---@return Vector # The actual view offset.
@@ -1047,20 +1047,20 @@ function Player:GetViewEntity() end
 ---@return Entity # The view model entity
 function Player:GetViewModel(index) end
 
----![(Shared)](https://github.com/user-attachments/assets/a356f942-57d7-4915-a8cc-559870a980fc) Returns the view offset of the player which equals the difference between the players actual position and their view.
+---![(Shared)](https://github.com/user-attachments/assets/a356f942-57d7-4915-a8cc-559870a980fc) Returns the view offset of the player, which equals the difference between the player's actual position and their view when standing.
 ---
 --- See also [Player:GetViewOffsetDucked](https://wiki.facepunch.com/gmod/Player:GetViewOffsetDucked).
 ---
 ---[View wiki](https://wiki.facepunch.com/gmod/Player:GetViewOffset)
----@return Vector # New view offset, must be local vector to players Entity:GetPos
+---@return Vector # New view offset, must be local vector to player's Entity:GetPos
 function Player:GetViewOffset() end
 
----![(Shared)](https://github.com/user-attachments/assets/a356f942-57d7-4915-a8cc-559870a980fc) Returns the view offset of the player which equals the difference between the players actual position and their view when ducked.
+---![(Shared)](https://github.com/user-attachments/assets/a356f942-57d7-4915-a8cc-559870a980fc) Returns the ducked view offset of the player, which equals the difference between the player's actual position and their view when ducked.
 ---
 --- See also [Player:GetViewOffset](https://wiki.facepunch.com/gmod/Player:GetViewOffset).
 ---
 ---[View wiki](https://wiki.facepunch.com/gmod/Player:GetViewOffsetDucked)
----@return Vector # New crouching view offset, must be local vector to players Entity:GetPos
+---@return Vector # New crouching view offset, must be local vector to player's Entity:GetPos
 function Player:GetViewOffsetDucked() end
 
 ---![(Shared)](https://github.com/user-attachments/assets/a356f942-57d7-4915-a8cc-559870a980fc) Returns players screen punch effect angle.

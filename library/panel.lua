@@ -162,18 +162,29 @@ function Panel:ApplyGWEN(GWENTable) end
 function Panel:ApplySchemeSettings() end
 
 ---![(Client and menu)](https://github.com/user-attachments/assets/25d1a1c8-4288-4a51-9867-5e3bb51b9981) Centers the panel on its parent.
---- 	**NOTE**: This will center the panel using the current size of the panel so should be called AFTER setting or adjusting the size of the 	panel
+---
+--- See [Panel:CenterHorizontal](https://wiki.facepunch.com/gmod/Panel:CenterHorizontal) and [Panel:CenterVertical](https://wiki.facepunch.com/gmod/Panel:CenterVertical) for more specialized functions.
+---
+--- 	**NOTE**: This will center the panel using the current size of the panel, so it should be called **AFTER** setting or adjusting the size of the panel.
+---
+--- Take special care when using [Panel:Dock](https://wiki.facepunch.com/gmod/Panel:Dock) as it will not update the size immediately.
+---
+--- You may want to use [Panel:PerformLayout](https://wiki.facepunch.com/gmod/Panel:PerformLayout) to set positions of child panels.
 ---
 ---[View wiki](https://wiki.facepunch.com/gmod/Panel:Center)
 function Panel:Center() end
 
 ---![(Client and menu)](https://github.com/user-attachments/assets/25d1a1c8-4288-4a51-9867-5e3bb51b9981) Centers the panel horizontally with specified fraction.
 ---
+--- See [Panel:CenterVertical](https://wiki.facepunch.com/gmod/Panel:CenterVertical) for vertical only centering, and  [Panel:Center](https://wiki.facepunch.com/gmod/Panel:Center) for a function that does both axes.
+---
 ---[View wiki](https://wiki.facepunch.com/gmod/Panel:CenterHorizontal)
 ---@param fraction? number The center fraction.
 function Panel:CenterHorizontal(fraction) end
 
 ---![(Client and menu)](https://github.com/user-attachments/assets/25d1a1c8-4288-4a51-9867-5e3bb51b9981) Centers the panel vertically with specified fraction.
+---
+--- See [Panel:CenterHorizontal](https://wiki.facepunch.com/gmod/Panel:CenterHorizontal) for horizontal only centering, and  [Panel:Center](https://wiki.facepunch.com/gmod/Panel:Center) for a function that does both axes.
 ---
 ---[View wiki](https://wiki.facepunch.com/gmod/Panel:CenterVertical)
 ---@param fraction? number The center fraction.
@@ -1715,7 +1726,7 @@ function Panel:Paste() end
 ---
 --- You should not call this function directly. Use [Panel:InvalidateLayout](https://wiki.facepunch.com/gmod/Panel:InvalidateLayout) instead.
 ---
---- You can use `vgui_visualizelayout 1` to visualize panel layouts as they happen for debugging purposes. Panels should not be doing this every frame.
+--- You should also be careful to not cause layout loops. You can use `vgui_visualizelayout 1` to visualize panel layouts as they happen for debugging purposes. Panels should not be doing this every frame for performance reasons.
 ---
 ---[View wiki](https://wiki.facepunch.com/gmod/PANEL:PerformLayout)
 ---@param width number The panels current width.
