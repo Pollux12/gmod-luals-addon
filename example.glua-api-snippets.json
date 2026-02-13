@@ -66,9 +66,13 @@
   },
   "baseGmodMap": {
     "base_gmodentity": true,
+    "base_entity": true,
+    "base_brush": true,
     "base_anim": true,
     "base_ai": true,
-    "base_nextbot": true
+    "base_nextbot": true,
+    "base_point": true,
+    "base_filter": true
   },
   "accessorForceTypes": {
     "FORCE_STRING": "string",
