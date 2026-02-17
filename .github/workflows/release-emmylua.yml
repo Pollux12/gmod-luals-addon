@@ -1,4 +1,4 @@
-name: release
+name: release-emmylua
 on:
   workflow_dispatch:
   push:
@@ -56,16 +56,16 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          
+
           # Create orphan branch with output/ contents
           git checkout --orphan emmylua-annotations
           git rm -rf .
           cp -r output/* .
           git add -A
-          
+
           # Commit with timestamp
           commitMsg="Update EmmyLua annotations - $(date -u +%Y-%m-%dT%H:%M:%SZ)"
           git commit -m "$commitMsg"
-          
+
           # Force push to publish
           git push -f origin emmylua-annotations
