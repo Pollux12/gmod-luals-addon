@@ -7,5 +7,8 @@
 ---
 --- Ensure that all tool file names are entirely lowercase.  Including capital letters can lead to unintended behavior.
 ---
+---@class Tool
+Tool = Tool or {}
+
 ---@class TOOL : Tool
 TOOL = {}
