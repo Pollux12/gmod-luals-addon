@@ -1,0 +1,11 @@
+---Adds simple Get/Set accessor functions on the specified table.
+--- Can also force the value to be set to a number, bool or string.
+---@realm shared
+---@realm menu
+---@source https://wiki.facepunch.com/gmod/Global.AccessorFunc
+---@accessorfunc 2
+---@param tab table The table to add the accessor functions to.
+---@param key any The key of the table to be get/set.
+---@param name string The name of the functions (will be prefixed with Get and Set).
+---@param force? FORCE The type the setter should force to (uses Enums/FORCE).
+function _G.AccessorFunc(tab, key, name, force) end
