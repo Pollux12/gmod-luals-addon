@@ -1,0 +1,11 @@
+---Inserts a value into a table at the end of the table or at the given position.
+--- **NOTE**: This function does not call the `__newindex` [metamethod](https://wiki.facepunch.com/gmod/Metamethods).
+---@realm shared
+---@realm menu
+---@source https://wiki.facepunch.com/gmod/table.insert
+---@overload fun(tbl: table, value: any): number
+---@param tbl table The table to insert the variable into.
+---@param position number The position in the table to insert the variable. If the third argument is nil this argument becomes the value to insert at the end of given table.
+---@param value any The variable to insert into the table.
+---@return number # The index the object was placed at.
+function table.insert(tbl, position, value) end
