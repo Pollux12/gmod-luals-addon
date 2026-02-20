@@ -1,0 +1,11 @@
+--- Custom override: CreateConVar accepts string or number as the default value.
+--- The wiki documents the parameter as string, but numbers are automatically
+--- converted by Lua and are commonly used in practice.
+---@param name string
+---@param value string|number
+---@param flags? FCVAR|number[]
+---@param helptext? string
+---@param min? number
+---@param max? number
+---@return ConVar
+function _G.CreateConVar(name, value, flags, helptext, min, max) end
