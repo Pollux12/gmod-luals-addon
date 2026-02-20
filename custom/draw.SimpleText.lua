@@ -1,0 +1,32 @@
+---Draws text on the screen.
+--- **NOTE**: This function does not handle newlines properly. See [draw.DrawText](https://wiki.facepunch.com/gmod/draw.DrawText) for a function that does.
+---@realm client
+---@realm menu
+---@source https://wiki.facepunch.com/gmod/draw.SimpleText
+---@param text any The text to be drawn.
+---@param font? string The font. See surface.CreateFont to create your own, or see Default Fonts for a list of default fonts.
+---@param x? number The X Coordinate.
+---@param y? number The Y Coordinate.
+---@param color? table The color of the text. Uses the Color.
+---@param xAlign? number The alignment of the X coordinate using Enums/TEXT_ALIGN.
+---@param yAlign? number The alignment of the Y coordinate using Enums/TEXT_ALIGN.
+---@return number # The width of the text. Same value as if you were calling surface.GetTextSize.
+---@return number # The height of the text. Same value as if you were calling surface.GetTextSize.
+function draw.SimpleText(text, font, x, y, color, xAlign, yAlign) end
+
+---Creates a simple line of text that is outlined.
+---@realm client
+---@realm menu
+---@source https://wiki.facepunch.com/gmod/draw.SimpleTextOutlined
+---@param Text any The text to draw.
+---@param font? string The font name to draw with. See surface.CreateFont to create your own, or Default_Fonts for a list of default fonts.
+---@param x? number The X Coordinate.
+---@param y? number The Y Coordinate.
+---@param color? table The color of the text. Uses the Color.
+---@param xAlign? number The alignment of the X Coordinate using Enums/TEXT_ALIGN.
+---@param yAlign? number The alignment of the Y Coordinate using Enums/TEXT_ALIGN.
+---@param outlinewidth number Width of the outline.
+---@param outlinecolor? table Color of the outline. Uses the Color.
+---@return number # The width of the text. Same value as if you were calling surface.GetTextSize.
+---@return number # The height of the text. Same value as if you were calling surface.GetTextSize.
+function draw.SimpleTextOutlined(Text, font, x, y, color, xAlign, yAlign, outlinewidth, outlinecolor) end

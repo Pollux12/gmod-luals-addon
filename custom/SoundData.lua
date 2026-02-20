@@ -8,7 +8,7 @@ local SoundData = {}
 --- Can be a table of sound files, in which case the sound will be chosen randomly every time from the provided list.
 ---
 --- Each sound path can be prepended with a special character for special effects. You can learn more about this [here](https://developer.valvesoftware.com/wiki/Soundscripts#Sound_Characters).
----@type string
+---@type string|string[]
 SoundData.sound = nil
 
 ---The name of the soundscript, to be referenced by in functions such as Entity:EmitSound.
