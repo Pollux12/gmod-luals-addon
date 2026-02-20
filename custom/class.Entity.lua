@@ -5,3 +5,8 @@
 local Entity = {}
 ---@class ENTITY : Entity
 ENTITY = Entity
+
+---Returns a table containing all key-value pairs stored on this entity's Lua table.
+---The returned table contains all fields but method calls via `:` are not supported.
+---@return tableof<self>
+function Entity:GetTable() end
