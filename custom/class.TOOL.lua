@@ -8,6 +8,7 @@
 --- Ensure that all tool file names are entirely lowercase.  Including capital letters can lead to unintended behavior.
 ---
 ---@class Tool
+---@field BuildCPanel fun(panel: ControlPanel) Called to populate the tool's control panel. Override to add your controls.
 Tool = Tool or {}
 
 ---@class TOOL : Tool
