@@ -166,6 +166,7 @@ export class GluaApiWriter {
       return this.writeClassGlobal(page);
   }
 
+  // Remove debug logging
   private writeClassStart(className: string, realm?: Realm, url?: string, parent?: string, deprecated?: string, description?: string) {
     let api: string = '';
 
@@ -465,8 +466,18 @@ export class GluaApiWriter {
   }
 
   public writeToDisk() {
-    // First, ensure any class.* overrides without corresponding wiki pages get emitted.
-    // These aren't triggered via writeClassStart if the wiki never provided that class.
+    // Process module files first so that class overrides with corresponding wiki
+    // pages are emitted inline (via writeClassStart) alongside their methods.
+    this.files.forEach((pages: IndexedWikiPage[], filePath: string) => {
+      let api = this.makeApiFromPages(pages);
+
+      if (api.length > 0) {
+        fs.appendFileSync(filePath, '---@meta\n\n' + api);
+      }
+    });
+
+    // Then, emit any class.* overrides that weren't triggered by wiki pages.
+    // These are truly orphan classes with no corresponding wiki module.
     const orphanClassOverrides: string[] = [];
     for (const [key, value] of this.pageOverrides.entries()) {
       const m = key.match(/^class\.(.+)$/);
@@ -487,14 +498,6 @@ export class GluaApiWriter {
       const payload = ['---@meta', '', ...orphanClassOverrides].join('\n');
       fs.writeFileSync(customFile, payload);
     }
-
-    this.files.forEach((pages: IndexedWikiPage[], filePath: string) => {
-      let api = this.makeApiFromPages(pages);
-
-      if (api.length > 0) {
-        fs.appendFileSync(filePath, '---@meta\n\n' + api);
-      }
-    });
   }
 
   public static transformType(type: string, callback?: FunctionCallback) {
