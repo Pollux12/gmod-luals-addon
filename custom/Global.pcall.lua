@@ -1,0 +1,12 @@
+---Calls a function and catches an error that can be thrown while the execution of the call.
+---
+--- This cannot stop errors from hooks called from the engine.
+---
+--- This does not stop [Global.Error](https://wiki.facepunch.com/gmod/Global.Error) and [Global.ErrorNoHalt](https://wiki.facepunch.com/gmod/Global.ErrorNoHalt) from sending error messages to the server (if called clientside) or calling the [GM:OnLuaError](https://wiki.facepunch.com/gmod/GM:OnLuaError) hook. The success boolean returned will always return true and thus you will not get the error message returned. [Global.error](https://wiki.facepunch.com/gmod/Global.error) does not exhibit these behaviours.
+---@realm shared
+---@source https://wiki.facepunch.com/gmod/Global.pcall
+---@generic T, R, R1
+---@param f sync fun(...: T...): R1, R... # Function to be executed and of which the errors should be caught of
+---@param ... T... # Arguments to call the function with.
+---@return boolean, R1|string, R... # If error, returns false and the error message. Otherwise, returns true and the return values of the function passed in.
+function _G.pcall(f, ...) end

@@ -1,0 +1,12 @@
+---Used to select single values from a vararg or get the count of values in it.
+--- * If it's a string and starts with "#", the function will return the amount of values in the vararg (ignoring the rest of the string).
+--- * If it's a positive number, the function will return all values starting from the given index.
+--- * If the number is negative, it will return the amount specified from the end instead of the beginning. This mode will not be compiled by LuaJIT.
+---@realm shared
+---@realm menu
+---@source https://wiki.facepunch.com/gmod/Global.select
+---@generic T, Num: integer | '#'
+---@param index std.ConstTpl<Num> # Can be a number or string (see above)
+---@param ... T... # The vararg. These are the values from which you want to select.
+---@return std.Select<T..., Num> # Returns a number or vararg, depending on the select method.
+function _G.select(index, ...) end

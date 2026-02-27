@@ -1,0 +1,14 @@
+---Returns a [Stateless Iterator](https://www.lua.org/pil/7.3.html) for a [Generic For Loops](https://www.lua.org/pil/4.3.5.html), to return ordered key-value pairs from a table.
+---
+--- This will only iterate through **numerical** keys, and these must also be **sequential**; starting at 1 with no gaps.
+---
+--- For unordered pairs, see [Global.pairs](https://wiki.facepunch.com/gmod/Global.pairs).
+---
+--- For pairs sorted by key in alphabetical order, see [Global.SortedPairs](https://wiki.facepunch.com/gmod/Global.SortedPairs).
+---@realm shared
+---@realm menu
+---@source https://wiki.facepunch.com/gmod/Global.ipairs
+---@generic V
+---@param t V[] | table<int, V> | {[int]: V} # The table to iterate over.
+---@return fun(tbl: any):int, V # The iterator function.
+function _G.ipairs(t) end
