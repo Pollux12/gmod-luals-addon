@@ -63,7 +63,7 @@ describe('GLua API Writer', () => {
     writer.writePages(structs, mockFilePath);
     const api = writer.makeApiFromPages(writer.getPages(mockFilePath));
     expect(api).toContain('---@source https://wiki.facepunch.com/gmod/Custom_Entity_Fields');
-    expect(api).toContain('---@class Custom_Entity_Fields');
+    expect(api).toContain('---@class (partial) Custom_Entity_Fields');
     expect(api).toContain('Custom_Entity_Fields = {}');
   });
 
