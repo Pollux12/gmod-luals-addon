@@ -39,5 +39,5 @@ end
 export const apiDefinition =
   `--- A simple slider featuring an numeric display.
 ---@deprecated Panel:SetActionFunction and Panel:PostMessage.         Use DNumSlider instead.
----@class Slider : Panel
+---@class (partial) Slider : Panel
 local Slider = {}\n\n`;
