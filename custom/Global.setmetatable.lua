@@ -2,7 +2,8 @@
 ---@realm shared
 ---@realm menu
 ---@source https://wiki.facepunch.com/gmod/Global.setmetatable
----@param Tab table The table who's metatable to change.
----@param Metatable? table The metatable to assign. If it's nil, the metatable will be removed.
----@return table # The first argument.
-function _G.setmetatable(Tab, Metatable) end
+---@generic T: table
+---@param table T # The table who's metatable to change.
+---@param metatable std.metatable|table|nil # The metatable to assign. If it's nil, the metatable will be removed.
+---@return T # Resulting table (first argument).
+function _G.setmetatable(table, metatable) end

@@ -1,0 +1,10 @@
+---If the result of the first argument is false or nil, an error is thrown with the second argument as the message.
+--- Since the second argument is only type-checked if the assertion fails, this doesn't have to be a string.
+---@realm shared
+---@realm menu
+---@source https://wiki.facepunch.com/gmod/Global.assert
+---@generic T, T1
+---@param expression T # The expression to assert.
+---@param ... T1... # Error Message and any arguments to return on success.
+---@return std.NotNull<T>, T1... # If successful, returns the first argument. On error, returns error message.
+function _G.assert(expression, ...) end

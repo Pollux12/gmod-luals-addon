@@ -1,0 +1,11 @@
+---Returns an iterator function([Global.next](https://wiki.facepunch.com/gmod/Global.next)) for a for loop that will return the values of the specified table in an arbitrary order.
+---
+--- * For alphabetical **key** order use [Global.SortedPairs](https://wiki.facepunch.com/gmod/Global.SortedPairs).
+--- * For alphabetical **value** order use [Global.SortedPairsByValue](https://wiki.facepunch.com/gmod/Global.SortedPairsByValue).
+---@realm shared
+---@realm menu
+---@source https://wiki.facepunch.com/gmod/Global.pairs
+---@generic K, V, I
+---@param t table<K, V> | V[] | {[K]: V} # The table being iterated over.
+---@return (fun(tbl: table<I, V>, index: I?):K, V), table<I, V>, I? # The iterator function
+function _G.pairs(t) end

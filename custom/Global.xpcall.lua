@@ -1,0 +1,17 @@
+---Attempts to call the first function. If the execution succeeds, this returns `true` followed by the returns of the function. If execution fails, this returns `false` and the second function is called with the error message.
+---
+--- Unlike in [Global.pcall](https://wiki.facepunch.com/gmod/Global.pcall), the stack is not unwound and can therefore be used for stack analyses with the [debug](https://wiki.facepunch.com/gmod/debug).
+---
+--- This cannot stop errors from hooks called from the engine.
+---
+--- This does not stop [Global.Error](https://wiki.facepunch.com/gmod/Global.Error) and [Global.ErrorNoHalt](https://wiki.facepunch.com/gmod/Global.ErrorNoHalt) (As well as [Global.include](https://wiki.facepunch.com/gmod/Global.include)) from sending error messages to the server (if called clientside) or calling the [GM:OnLuaError](https://wiki.facepunch.com/gmod/GM:OnLuaError) hook. The success boolean returned will always return true and thus you will not get the error message returned. [Global.error](https://wiki.facepunch.com/gmod/Global.error) does not exhibit these behaviours.
+--- You cannot throw an Global.error() from this callback: it will have no effect (not even stopping the callback).
+---@realm shared
+---@realm menu
+---@source https://wiki.facepunch.com/gmod/Global.xpcall
+---@generic T, R
+---@param func sync fun(...:T...): R... # The function to call initially.
+---@param errorCallback fun(err:any):any # Second function to call on fail with error message
+---@param ... T... # Arguments to pass to the initial function.
+---@return boolean, R... # Status of the execution; true + varargs for success, false + first return of error callback for failure.
+function _G.xpcall(func, errorCallback, ...) end
