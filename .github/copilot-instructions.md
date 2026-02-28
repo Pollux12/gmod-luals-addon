@@ -7,7 +7,7 @@ Primary responsibility:
 1. **Wiki Scraper (TypeScript)**: Scrapes the GMod Wiki to gather API metadata.
 2. **Annotation Writer (TypeScript)**: Converts metadata into EmmyLua/LuaCATS annotation files (`output/*.lua`).
 
-Generated annotations are consumed by the GMod `emmylua-analyzer-rust` language server workflow.
+Generated annotations are consumed by the GMod `gmod-glua-ls` language server workflow.
 
 ## Architecture
 
@@ -31,8 +31,8 @@ Generated annotations are consumed by the GMod `emmylua-analyzer-rust` language 
 - **Create release artifacts locally** (legacy): `npm run pack-release` (`*.lua.zip`)
 
 ### Release behavior (GitHub Actions)
-- Releases run from `.github/workflows/release.yml`.
-- Workflow checks whether wiki data changed and publishes updated annotations to the `emmylua-annotations` branch.
+- Releases run from `.github/workflows/release-gluals.yml`.
+- Workflow checks whether wiki data changed and publishes updated annotations to the `gluals-annotations` branch.
 - The VSCode extension automatically downloads annotations from this branch for end-user consumption.
 
 ## Conventions & Patterns

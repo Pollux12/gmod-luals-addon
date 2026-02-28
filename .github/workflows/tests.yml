@@ -2,7 +2,7 @@ name: tests
 on:
   push:
     branches:
-      - emmylua-gmod
+      - gluals-gmod
   pull_request:
     branches:
       - "**"
