@@ -54,7 +54,7 @@ jobs:
           cp output/__metadata.json "$tmpdir/"
 
           # Create orphan branch, then wipe EVERYTHING (tracked + untracked + ignored)
-          branchName="emmylua-annotations-test"
+          branchName="gluals-annotations-test"
           git checkout --orphan "$branchName"
           git rm -rf .
           git clean -fdx
@@ -65,7 +65,7 @@ jobs:
           git add -A
 
           # Commit with timestamp and branch reference
-          commitMsg="Update EmmyLua annotations (test) - $(date -u +%Y-%m-%dT%H:%M:%SZ) - from ${{ github.ref_name }}"
+          commitMsg="Update GLuaLS annotations (test) - $(date -u +%Y-%m-%dT%H:%M:%SZ) - from ${{ github.ref_name }}"
           git commit -m "$commitMsg"
 
           # Force push to publish

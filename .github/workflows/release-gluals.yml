@@ -1,9 +1,9 @@
-name: release-emmylua
+name: release-gluals
 on:
   workflow_dispatch:
   push:
     branches:
-      - emmylua-gmod
+      - gluals-gmod
   schedule:
     - cron: "0 0 1 * *"
 jobs:
@@ -65,7 +65,7 @@ jobs:
           cp output/__metadata.json "$tmpdir/"
 
           # Create orphan branch, then wipe EVERYTHING (tracked + untracked + ignored)
-          git checkout --orphan emmylua-annotations
+          git checkout --orphan gluals-annotations
           git rm -rf .
           git clean -fdx
 
@@ -75,8 +75,8 @@ jobs:
           git add -A
 
           # Commit with timestamp
-          commitMsg="Update EmmyLua annotations - $(date -u +%Y-%m-%dT%H:%M:%SZ)"
+          commitMsg="Update GLuaLS annotations - $(date -u +%Y-%m-%dT%H:%M:%SZ)"
           git commit -m "$commitMsg"
 
           # Force push to publish
-          git push -f origin emmylua-annotations
+          git push -f origin gluals-annotations
