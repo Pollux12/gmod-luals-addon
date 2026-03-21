@@ -25,8 +25,8 @@
     "publish-library": "tsx ./src/cli-library-publisher.ts --input ./output/ --output ./dist/libraries/garrysmod",
     "build-plugin": "npm run publish-library && npm run pack-release",
     "stylua-custom": "npx --yes @johnnymorganz/stylua-bin@0.17.1 ./custom",
-    "test": "cross-env NODE_OPTIONS=--experimental-vm-modules VERBOSE_LOGGING=1 npx jest",
-    "ci:test": "cross-env NODE_OPTIONS=--experimental-vm-modules npx jest --ci --coverage"
+    "test": "cross-env VERBOSE_LOGGING=1 node --experimental-vm-modules --localstorage-file=.jest-localstorage ./node_modules/jest/bin/jest.js",
+    "ci:test": "node --experimental-vm-modules --localstorage-file=.jest-localstorage ./node_modules/jest/bin/jest.js --ci --coverage"
   },
   "devDependencies": {
     "@types/archiver": "^6.0.2",
