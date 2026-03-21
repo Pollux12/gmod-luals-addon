@@ -1,5 +1,18 @@
 ---@meta
 
+---@class VMatrix
+--- A 4x4 matrix.
+---
+--- This page lists all possible functions to manipulate matrices.
+---
+--- This object can be created by Global.Matrix.
+---@operator add(VMatrix): VMatrix
+---@operator mul(Vector): Vector
+---@operator mul(VMatrix): VMatrix
+---@operator sub(VMatrix): VMatrix
+---@operator unm: VMatrix
+local VMatrix = {}
+
 ---![(Shared)](https://github.com/user-attachments/assets/a356f942-57d7-4915-a8cc-559870a980fc) Adds given matrix to this matrix.
 ---
 ---[View wiki](https://wiki.facepunch.com/gmod/VMatrix:Add)

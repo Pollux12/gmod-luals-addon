@@ -1504,7 +1504,7 @@ function Player:Ping() end
 ---![(Server)](https://github.com/user-attachments/assets/d8fbe13a-6305-4e16-8698-5be874721ca1) Plays the correct step sound according to what the player is staying on.
 ---
 ---[View wiki](https://wiki.facepunch.com/gmod/Player:PlayStepSound)
----@param volume number Volume for the sound, in range from 0 to 1
+---@param volume? number Volume for the sound, in range from 0 to 1
 function Player:PlayStepSound(volume) end
 
 ---![(Client)](https://github.com/user-attachments/assets/a5f6ba64-374d-42f0-b2f4-50e5c964e808) Called after the viewmodel has been drawn
@@ -1749,7 +1749,7 @@ function Player:SetDrivingEntity(drivingEntity, drivingMode) end
 --- 	If used serverside, a message will be displayed (`SetPlayerDSP: fastReset only valid from client`) in the server console.
 function Player:SetDSP(dspEffectId, fastReset) end
 
----![(Shared)](https://github.com/user-attachments/assets/a356f942-57d7-4915-a8cc-559870a980fc) Sets how quickly a player ducks.
+---![(Server)](https://github.com/user-attachments/assets/d8fbe13a-6305-4e16-8698-5be874721ca1) Sets how quickly a player ducks.
 ---
 --- This will not work for values >= 1.
 ---

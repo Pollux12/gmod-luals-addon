@@ -308,13 +308,16 @@ function Entity:CanProperty(ply, property) end
 ---
 ---[View wiki](https://wiki.facepunch.com/gmod/ENTITY:CanTool)
 ---@param ply Player Player, that tried to use the tool
----@param tr table The trace of the tool. See Structures/TraceResult.
+---@param tr TraceResult The trace of the tool.
+--- Returns only [Entity](https://wiki.facepunch.com/gmod/Structures/TraceResult#Entity) when the 5th argument returns `4`
 ---@param toolname string Class of the tool that is tried to use, for example - `weld`
 ---@param tool table The tool mode table the player currently has selected.
 ---@param button number The tool button pressed.
 --- * 1 - left click
 --- * 2 - right click
 --- * 3 - reload
+--- * 4 - Menu (No interaction with the toolgun)
+--- The number `4` is a test that Rubat is conducting to implement the CanTool in the SpawnMenu. It may disappear.
 ---@return boolean # Return `false` to disallow using that tool on this entity, return `true` to allow.
 function Entity:CanTool(ply, tr, toolname, tool, button) end
 
@@ -601,7 +604,7 @@ function Entity:DTVar(type, name) end
 ---@param volume? number The volume, from 0 to 1.
 ---@param channel? number The sound channel, see Enums/CHAN.
 ---@param soundFlags? number The flags of the sound, see Enums/SND
----@param dsp? number The DSP preset for this sound. [List of DSP presets](https://developer.valvesoftware.com/wiki/Dsp_presets)
+---@param dsp? number The DSP preset for this sound. DSP_Presets
 ---@param filter? CRecipientFilter If set serverside, the sound will only be networked to the clients in the filter.
 function Entity:EmitSound(soundName, soundLevel, pitchPercent, volume, channel, soundFlags, dsp, filter) end
 
@@ -716,13 +719,12 @@ function Entity:FindBodygroupByName(name) end
 function Entity:FindGestureLayer(activity) end
 
 ---![(Server)](https://github.com/user-attachments/assets/d8fbe13a-6305-4e16-8698-5be874721ca1) Searches the currently active layers for a layer playing animation with given sequence.
----
 --- **NOTE**: This function only works on [BaseAnimatingOverlay](https://wiki.facepunch.com/gmod/BaseAnimatingOverlay) entites!
 ---
 ---[View wiki](https://wiki.facepunch.com/gmod/Entity:FindGestureSequenceLayer)
 ---@param sequenceID number The sequence ID to search for. See Entity:LookupSequence.
----@return number # A layer ID for given activity, or `-1` if not found.
-function Entity:FindGestureLayer(sequenceID) end
+---@return number # A layer ID for given sequence, or `-1` if not found.
+function Entity:FindGestureSequenceLayer(sequenceID) end
 
 ---![(Shared)](https://github.com/user-attachments/assets/a356f942-57d7-4915-a8cc-559870a980fc) Returns a transition from the given start and end sequence.
 ---
@@ -1593,7 +1595,7 @@ function Entity:GetMaterial() end
 ---[View wiki](https://wiki.facepunch.com/gmod/Entity:GetMaterials)
 ---@return table # A table containing full paths to the materials of the model.
 ---
---- For models, it's limited to 128 materials.
+--- For models, it's limited to `128` materials.
 function Entity:GetMaterials() end
 
 ---![(Server)](https://github.com/user-attachments/assets/d8fbe13a-6305-4e16-8698-5be874721ca1) Returns the [surface material type](https://developer.valvesoftware.com/wiki/Material_Types) of this entity.
@@ -4655,6 +4657,8 @@ function Entity:SetModelName(modelname) end
 ---
 --- **NOTE**: If you do not want the physics to be affected by [Entity:Activate](https://wiki.facepunch.com/gmod/Entity:Activate), you can use [Entity:ManipulateBoneScale](https://wiki.facepunch.com/gmod/Entity:ManipulateBoneScale)`( 0, Vector( scale, scale, scale ) )` instead.
 ---
+---  On the client, `anim` types' collision testing prediction fails for changed model scales: you can use `cl_showerror 2` to see by how much. Essentially, the client will freak out when you stand/run past on a Scripted Entity or prop that has been modified using this method.
+---
 --- This disables IK.
 ---
 ---[View wiki](https://wiki.facepunch.com/gmod/Entity:SetModelScale)
@@ -5340,6 +5344,7 @@ function Entity:SetOwner(owner) end
 --- Use Entity:AddEffects( EF_FOLLOWBONE ) to treat this argument as a Bone ID instead of an Attachment ID. Similar to Entity:FollowBone.
 ---
 --- You must call [Entity:SetMoveType](https://wiki.facepunch.com/gmod/Entity:SetMoveType)( MOVETYPE_NONE ) on the child for this argument to have any effect!
+--- Parenting to attachment IDs more than `255` is unsupported and will output a LUA error.
 function Entity:SetParent(parent, attachmentOrBoneId) end
 
 ---![(Shared)](https://github.com/user-attachments/assets/a356f942-57d7-4915-a8cc-559870a980fc) Sets the parent of an entity to another entity with the given physics bone number. Similar to [Entity:SetParent](https://wiki.facepunch.com/gmod/Entity:SetParent), except it is parented to a physbone. This function is useful mainly for ragdolls.
@@ -5378,8 +5383,9 @@ function Entity:SetPhysConstraintObjects(Phys1, Phys2) end
 ---@param timeLimit? number Time in seconds until the entity forgets its physics attacker and prevents it from getting the kill credit.
 function Entity:SetPhysicsAttacker(ent, timeLimit) end
 
----![(Shared)](https://github.com/user-attachments/assets/a356f942-57d7-4915-a8cc-559870a980fc) Allows you to set how fast an entity's animation will play,
---- with 1.0 being the default speed.
+---![(Shared)](https://github.com/user-attachments/assets/a356f942-57d7-4915-a8cc-559870a980fc) Allows you to set how fast an entity's animation will play, with 1.0 being the default speed.
+---
+--- It is networked to clients, but limited to [-4,12] range when networking.
 ---
 --- **NOTE**: This function does not affect gestures.
 --- 	Use [Entity:SetLayerPlaybackRate](https://wiki.facepunch.com/gmod/Entity:SetLayerPlaybackRate) instead.
@@ -5469,10 +5475,12 @@ function Entity:SetRagdollBuildFunction(builder) end
 ---@param pos Vector Position to set
 function Entity:SetRagdollPos(boneid, pos) end
 
----![(Client)](https://github.com/user-attachments/assets/a5f6ba64-374d-42f0-b2f4-50e5c964e808) Sets the render angle override for the Entity.
+---![(Client)](https://github.com/user-attachments/assets/a5f6ba64-374d-42f0-b2f4-50e5c964e808) Sets the render angles override for the entity. [Entity:GetAngles](https://wiki.facepunch.com/gmod/Entity:GetAngles) will return the value set by this function until the override is disabled. (This is all this does internally)
+---
+--- See [Entity:SetRenderOrigin](https://wiki.facepunch.com/gmod/Entity:SetRenderOrigin) for the function to manipulate origin.
 ---
 ---[View wiki](https://wiki.facepunch.com/gmod/Entity:SetRenderAngles)
----@param newAngles? Angle The new render angles to be set to. To disable the override, set to nil.
+---@param newAngles? Angle|nil The new render angles to be set to. To disable the override, set to nil.
 function Entity:SetRenderAngles(newAngles) end
 
 ---![(Client)](https://github.com/user-attachments/assets/a5f6ba64-374d-42f0-b2f4-50e5c964e808) Sets the render bounds for the entity.
@@ -5518,10 +5526,12 @@ function Entity:SetRenderFX(renderFX) end
 ---@param renderMode number New render mode to set, see Enums/RENDERMODE.
 function Entity:SetRenderMode(renderMode) end
 
----![(Client)](https://github.com/user-attachments/assets/a5f6ba64-374d-42f0-b2f4-50e5c964e808) Set the render origin override, a position where the Entity will be rendered at.
+---![(Client)](https://github.com/user-attachments/assets/a5f6ba64-374d-42f0-b2f4-50e5c964e808) Sets the render origin override, a position where the entity will be rendered at. [Entity:GetPos](https://wiki.facepunch.com/gmod/Entity:GetPos) will return the value set by this function until the override is disabled. (This is all this does internally)
+---
+--- See [Entity:SetRenderAngles](https://wiki.facepunch.com/gmod/Entity:SetRenderAngles) for the function to manipulate angles.
 ---
 ---[View wiki](https://wiki.facepunch.com/gmod/Entity:SetRenderOrigin)
----@param newOrigin? Vector The new origin in world coordinates where the Entity's model will now be rendered at. To disable the override, set to nil.
+---@param newOrigin? Vector|nil The new origin in world coordinates where the entity's model will now be rendered at. To disable the override, set to nil.
 function Entity:SetRenderOrigin(newOrigin) end
 
 ---![(Shared)](https://github.com/user-attachments/assets/a356f942-57d7-4915-a8cc-559870a980fc) Sets a save value for an entity. You can see a full list of an entity's save values by creating it and printing [Entity:GetSaveTable](https://wiki.facepunch.com/gmod/Entity:GetSaveTable).
@@ -5622,9 +5632,9 @@ function Entity:SetSpawnFlags(flags) end
 --- The server's value takes priority on the client.
 ---
 ---[View wiki](https://wiki.facepunch.com/gmod/Entity:SetSubMaterial)
----@param index? number Index of the material to override, acceptable values are from 0 to 31.
+---@param index? number Index of the material to override, acceptable values are from `0` to `31`.
 ---
---- Indexes are by Entity:GetMaterials, but you have to subtract 1 from them.
+--- Indexes are by Entity:GetMaterials, but you have to subtract `1` from them.
 ---
 --- If called with no arguments, all sub materials will be reset.
 ---@param material? string The material to override the default one with. Set to nil to revert to default material.

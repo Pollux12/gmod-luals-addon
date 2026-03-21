@@ -1,5 +1,12 @@
 ---@meta
 
+---@class Color
+---@field r number The red component of the color.
+---@field g number The green component of the color.
+---@field b number The blue component of the color.
+---@field a number The alpha component of the color.
+local Color = {}
+
 ---![(Shared and Menu)](https://github.com/user-attachments/assets/8f5230ff-38f7-493b-b9fc-cc70ffd5b3f4) Converts a [Color](https://wiki.facepunch.com/gmod/Color) into [HWB color space](https://en.wikipedia.org/wiki/HWB_color_model), adds given value to the "blackness" and converts it back into an RGB color.
 ---
 --- A slightly more efficient combination of [COLOR:GetBlackness](https://wiki.facepunch.com/gmod/COLOR:GetBlackness) & [COLOR:SetBlackness](https://wiki.facepunch.com/gmod/COLOR:SetBlackness)

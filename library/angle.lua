@@ -1,5 +1,27 @@
 ---@meta
 
+---@class Angle
+--- List of all possible functions to manipulate angles.
+---
+--- Created by Global.Angle.
+---@field p number
+---@field y number
+---@field r number
+---@field pitch number
+---@field yaw number
+---@field roll number
+---@field x number
+---@field z number
+---@field [1] number
+---@field [2] number
+---@field [3] number
+---@operator add(Angle): Angle
+---@operator div(number): Angle
+---@operator mul(number): Angle
+---@operator sub(Angle): Angle
+---@operator unm: Angle
+local Angle = {}
+
 ---![(Shared and Menu)](https://github.com/user-attachments/assets/8f5230ff-38f7-493b-b9fc-cc70ffd5b3f4) Adds the values of the argument angle to the orignal angle.
 ---
 --- This functions the same as angle1 + angle2 without creating a new angle object, skipping object construction and garbage collection.

@@ -521,7 +521,7 @@ function Panel:GetAlpha() end
 --- **NOTE**: This doesn't apply to all VGUI elements and its function varies between them
 ---
 ---[View wiki](https://wiki.facepunch.com/gmod/Panel:GetBGColor)
----@return number # The Color structure
+---@return Color # The Color structure
 function Panel:GetBGColor() end
 
 ---![(Client and menu)](https://github.com/user-attachments/assets/25d1a1c8-4288-4a51-9867-5e3bb51b9981) Returns the position and size of the panel.
@@ -677,7 +677,7 @@ function Panel:GetDockPadding() end
 --- **NOTE**: This doesn't apply to all VGUI elements (such as [DLabel](https://wiki.facepunch.com/gmod/DLabel)) and its function varies between them
 ---
 ---[View wiki](https://wiki.facepunch.com/gmod/Panel:GetFGColor)
----@return table # A color structure. See Color
+---@return Color # A color structure. See Color
 function Panel:GetFGColor() end
 
 ---![(Client and menu)](https://github.com/user-attachments/assets/25d1a1c8-4288-4a51-9867-5e3bb51b9981) Returns the name of the font that the panel renders its text with.
@@ -1297,6 +1297,7 @@ function Panel:LoadGWENString(str) end
 ---@param strPath string The PATH to search in. See File Search Paths.
 ---
 --- This isn't used internally.
+---@deprecated DImage should be used instead (with `.png` or `.jpg` images). `TGAImage` panel has no advantages.
 function Panel:LoadTGAImage(imageName, strPath) end
 
 ---![(Client and menu)](https://github.com/user-attachments/assets/25d1a1c8-4288-4a51-9867-5e3bb51b9981) Returns the cursor position local to the position of the panel (usually the upper-left corner).
@@ -1942,11 +1943,25 @@ function Panel:SetAutoDelete(autoDelete) end
 --- **NOTE**: This doesn't apply to all VGUI elements and its function varies between them
 ---
 ---[View wiki](https://wiki.facepunch.com/gmod/Panel:SetBGColor)
----@param rOrColor number The red channel of the color, or a Color. If you pass the latter, the following three arguments are ignored.
+---@param r number The red channel of the color.
 ---@param g number The green channel of the color.
 ---@param b number The blue channel of the color.
 ---@param a number The alpha channel of the color.
-function Panel:SetBGColor(rOrColor, g, b, a) end
+function Panel:SetBGColor(r, g, b, a) end
+
+---![(Client and menu)](https://github.com/user-attachments/assets/25d1a1c8-4288-4a51-9867-5e3bb51b9981) Sets the background color of a panel such as a [RichText](https://wiki.facepunch.com/gmod/RichText), [Label](https://wiki.facepunch.com/gmod/Label), [DColorCube](https://wiki.facepunch.com/gmod/DColorCube) or the base [Panel](https://wiki.facepunch.com/gmod/Panel).
+---
+--- For many panels, such as [DLabel](https://wiki.facepunch.com/gmod/DLabel) and [Panel](https://wiki.facepunch.com/gmod/Panel), you must use [Panel:SetPaintBackgroundEnabled](https://wiki.facepunch.com/gmod/Panel:SetPaintBackgroundEnabled)( true ) for the background to appear.
+---
+--- Please note that for most panels the engine will overwrite the foreground and background colors a frame after panel creation via the [PANEL:ApplySchemeSettings](https://wiki.facepunch.com/gmod/PANEL:ApplySchemeSettings) hook, so you may want to set the color in that hook instead.
+---
+--- See [Panel:SetFGColor](https://wiki.facepunch.com/gmod/Panel:SetFGColor) for the foreground color.
+---
+--- **NOTE**: This doesn't apply to all VGUI elements and its function varies between them
+---
+---[View wiki](https://wiki.facepunch.com/gmod/Panel:SetBGColor)
+---@param color table A Color object/table to read the color from. This is slower than providing four numbers. You could use Color:Unpack to address this. You should also cache your color objects if you wish to use them, for performance reasons.
+function Panel:SetBGColor(color) end
 
 ---![(Client and menu)](https://github.com/user-attachments/assets/25d1a1c8-4288-4a51-9867-5e3bb51b9981) **INTERNAL**: This is used internally - although you're able to use it you probably shouldn't.
 --- Sets the background color of the panel.
@@ -2123,11 +2138,27 @@ function Panel:SetExpensiveShadow(distance, Color) end
 --- **NOTE**: This doesn't apply to all VGUI elements (such as [DLabel](https://wiki.facepunch.com/gmod/DLabel)) and its function varies between them
 ---
 ---[View wiki](https://wiki.facepunch.com/gmod/Panel:SetFGColor)
----@param rOrColor number The red channel of the color, or a Color. If you pass the latter, the following three arguments are ignored.
+---@param r number The red channel of the color.
 ---@param g number The green channel of the color.
 ---@param b number The blue channel of the color.
 ---@param a number The alpha channel of the color.
-function Panel:SetFGColor(rOrColor, g, b, a) end
+function Panel:SetFGColor(r, g, b, a) end
+
+---![(Client and menu)](https://github.com/user-attachments/assets/25d1a1c8-4288-4a51-9867-5e3bb51b9981) Sets the foreground color of a panel.
+---
+--- For a [Label](https://wiki.facepunch.com/gmod/Label) or [RichText](https://wiki.facepunch.com/gmod/RichText), this is the color of its text.
+---
+--- This function calls [Panel:SetFGColorEx](https://wiki.facepunch.com/gmod/Panel:SetFGColorEx) internally.
+---
+--- Please note that for most panels the engine will overwrite the foreground and background colors a frame after panel creation via the [PANEL:ApplySchemeSettings](https://wiki.facepunch.com/gmod/PANEL:ApplySchemeSettings) hook, so you may want to set the color in that hook instead.
+---
+--- See [Panel:SetBGColor](https://wiki.facepunch.com/gmod/Panel:SetBGColor) for the background color.
+---
+--- **NOTE**: This doesn't apply to all VGUI elements (such as [DLabel](https://wiki.facepunch.com/gmod/DLabel)) and its function varies between them
+---
+---[View wiki](https://wiki.facepunch.com/gmod/Panel:SetFGColor)
+---@param color table A Color object/table to read the color from. This is slower than providing four numbers. You could use Color:Unpack to address this. You should also cache your color objects if you wish to use them, for performance reasons.
+function Panel:SetFGColor(color) end
 
 ---![(Client and menu)](https://github.com/user-attachments/assets/25d1a1c8-4288-4a51-9867-5e3bb51b9981) **INTERNAL**: This is used internally - although you're able to use it you probably shouldn't.
 --- Sets the foreground color of the panel.

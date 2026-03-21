@@ -43,6 +43,14 @@ function mesh.Begin(mesh, primitiveType, primitiveCount) end
 --- For a full list of the primitive counts expected by each primitive type, see Enums/MATERIAL.
 function mesh.Begin(primitiveType, primitiveCount) end
 
+---![(Client)](https://github.com/user-attachments/assets/a5f6ba64-374d-42f0-b2f4-50e5c964e808) Sets the bone matrix ID and bone weight to be used for the next vertex. See [mesh.Begin](https://wiki.facepunch.com/gmod/mesh.Begin).
+---
+---[View wiki](https://wiki.facepunch.com/gmod/mesh.BoneData)
+---@param index number The slot index for the vertex, either 0 or 1.
+---@param matrixId number The matrix index for the vertex, in the range of 0 -> 52. This is the index into IMesh:DrawSkinned's ``bones`` argument, minus 1.
+---@param weight number How much influence that matrix will have on this vertex, in the range of 0 -> 1.
+function mesh.BoneData(index, matrixId, weight) end
+
 ---![(Client)](https://github.com/user-attachments/assets/a5f6ba64-374d-42f0-b2f4-50e5c964e808) Sets the color to be used for the next vertex. This is `COLOR0` semantic of
 --- Vertex Shader. See [mesh.Begin](https://wiki.facepunch.com/gmod/mesh.Begin).
 ---
@@ -108,8 +116,7 @@ function mesh.Quad(vertex1, vertex2, vertex3, vertex4, color) end
 ---@param color table The color for the vertices.
 function mesh.QuadEasy(position, normal, sizeX, sizeY, color) end
 
----![(Client)](https://github.com/user-attachments/assets/a5f6ba64-374d-42f0-b2f4-50e5c964e808) Sets the specular map values. This is `COLOR1` semantic of Vertex Shader.
---- **NOTE**: This doesn't currently work, even though `COLOR0` can be successfully passed to the Vertex Shader using [mesh.Color](https://wiki.facepunch.com/gmod/mesh.Color), unlike `COLOR1`, ​​using this function.
+---![(Client)](https://github.com/user-attachments/assets/a5f6ba64-374d-42f0-b2f4-50e5c964e808) Sets the specular map values. This is `COLOR1` semantic of Vertex Shader. Allows to blend textures of [Lightmapped_4WayBlend](https://developer.valvesoftware.com/wiki/Lightmapped_4WayBlend). Requires the `VERTEX_SPECULAR` flag to be set in the C++ code of a shader.
 ---
 ---[View wiki](https://wiki.facepunch.com/gmod/mesh.Specular)
 ---@param r number The red channel multiplier of the specular map.

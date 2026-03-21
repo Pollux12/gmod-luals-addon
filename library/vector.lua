@@ -1,5 +1,22 @@
 ---@meta
 
+---@class Vector
+--- List of all possible functions to manipulate vectors.
+---
+--- Created by Global.Vector.
+---@field x number
+---@field y number
+---@field z number
+---@field [1] number
+---@field [2] number
+---@field [3] number
+---@operator add(Vector): Vector
+---@operator div(number|Vector): Vector
+---@operator mul(number|Vector): Vector
+---@operator sub(Vector): Vector
+---@operator unm: Vector
+local Vector = {}
+
 ---![(Shared and Menu)](https://github.com/user-attachments/assets/8f5230ff-38f7-493b-b9fc-cc70ffd5b3f4) Adds the values of the argument vector to the original vector. This function is the same as vector1 + vector2 without creating a new vector object, skipping object construction and garbage collection.
 ---
 ---[View wiki](https://wiki.facepunch.com/gmod/Vector:Add)
@@ -170,8 +187,20 @@ function Vector:LengthSqr() end
 ---![(Shared and Menu)](https://github.com/user-attachments/assets/8f5230ff-38f7-493b-b9fc-cc70ffd5b3f4) Scales the vector by the given [number](https://wiki.facepunch.com/gmod/number) (that means x, y and z are multiplied by that value), a [Vector](https://wiki.facepunch.com/gmod/Vector) (X, Y, and Z of each vector are multiplied) or a [VMatrix](https://wiki.facepunch.com/gmod/VMatrix) (Transforms the vector by the matrix's rotation/translation).
 ---
 ---[View wiki](https://wiki.facepunch.com/gmod/Vector:Mul)
----@param multiplier number The value to scale the vector with.
+---@param multiplier number The value to multiply the vector with.
 function Vector:Mul(multiplier) end
+
+---![(Shared and Menu)](https://github.com/user-attachments/assets/8f5230ff-38f7-493b-b9fc-cc70ffd5b3f4) Scales the vector by the given [number](https://wiki.facepunch.com/gmod/number) (that means x, y and z are multiplied by that value), a [Vector](https://wiki.facepunch.com/gmod/Vector) (X, Y, and Z of each vector are multiplied) or a [VMatrix](https://wiki.facepunch.com/gmod/VMatrix) (Transforms the vector by the matrix's rotation/translation).
+---
+---[View wiki](https://wiki.facepunch.com/gmod/Vector:Mul)
+---@param multiplier Vector The vector to multiply the vector with.
+function Vector:Mul(multiplier) end
+
+---![(Shared and Menu)](https://github.com/user-attachments/assets/8f5230ff-38f7-493b-b9fc-cc70ffd5b3f4) Scales the vector by the given [number](https://wiki.facepunch.com/gmod/number) (that means x, y and z are multiplied by that value), a [Vector](https://wiki.facepunch.com/gmod/Vector) (X, Y, and Z of each vector are multiplied) or a [VMatrix](https://wiki.facepunch.com/gmod/VMatrix) (Transforms the vector by the matrix's rotation/translation).
+---
+---[View wiki](https://wiki.facepunch.com/gmod/Vector:Mul)
+---@param matrix VMatrix The matrix to transform the vector by.
+function Vector:Mul(matrix) end
 
 ---![(Shared and Menu)](https://github.com/user-attachments/assets/8f5230ff-38f7-493b-b9fc-cc70ffd5b3f4) Negates this vector, i.e. sets every component to the negative value of itself. Same as `Vector( -vec.x, -vec.y, -vec.z )`
 ---

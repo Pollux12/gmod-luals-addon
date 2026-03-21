@@ -172,13 +172,13 @@ function CMoveData:KeyReleased(key) end
 ---@return boolean # Was the key down or not
 function CMoveData:KeyWasDown(key) end
 
----![(Shared)](https://github.com/user-attachments/assets/a356f942-57d7-4915-a8cc-559870a980fc) Sets absolute move angles.( ? ) Doesn't seem to do anything.
+---![(Server)](https://github.com/user-attachments/assets/d8fbe13a-6305-4e16-8698-5be874721ca1) Sets absolute move angles.( ? ) Doesn't seem to do anything.
 ---
 ---[View wiki](https://wiki.facepunch.com/gmod/CMoveData:SetAbsMoveAngles)
 ---@param ang Angle New absolute move angles
 function CMoveData:SetAbsMoveAngles(ang) end
 
----![(Shared)](https://github.com/user-attachments/assets/a356f942-57d7-4915-a8cc-559870a980fc) Sets angles.
+---![(Server)](https://github.com/user-attachments/assets/d8fbe13a-6305-4e16-8698-5be874721ca1) Sets angles.
 ---
 --- This function does nothing.
 ---
@@ -186,7 +186,7 @@ function CMoveData:SetAbsMoveAngles(ang) end
 ---@param ang Angle The angles.
 function CMoveData:SetAngles(ang) end
 
----![(Shared)](https://github.com/user-attachments/assets/a356f942-57d7-4915-a8cc-559870a980fc) Sets the pressed buttons on the move data
+---![(Server)](https://github.com/user-attachments/assets/d8fbe13a-6305-4e16-8698-5be874721ca1) Sets the pressed buttons on the move data
 ---
 ---[View wiki](https://wiki.facepunch.com/gmod/CMoveData:SetButtons)
 ---@param buttons number A number representing which buttons are down, see Enums/IN
@@ -221,37 +221,37 @@ function CMoveData:SetConstraintSpeedScale(number) end
 ---@param number number The constraint width
 function CMoveData:SetConstraintWidth(number) end
 
----![(Shared)](https://github.com/user-attachments/assets/a356f942-57d7-4915-a8cc-559870a980fc) Sets an internal player movement variable `m_outWishVel`.
+---![(Server)](https://github.com/user-attachments/assets/d8fbe13a-6305-4e16-8698-5be874721ca1) Sets an internal player movement variable `m_outWishVel`.
 ---
 ---[View wiki](https://wiki.facepunch.com/gmod/CMoveData:SetFinalIdealVelocity)
 ---@param idealVel Vector
 function CMoveData:SetFinalIdealVelocity(idealVel) end
 
----![(Shared)](https://github.com/user-attachments/assets/a356f942-57d7-4915-a8cc-559870a980fc) Sets an internal player movement variable `m_outJumpVel`.
+---![(Server)](https://github.com/user-attachments/assets/d8fbe13a-6305-4e16-8698-5be874721ca1) Sets an internal player movement variable `m_outJumpVel`.
 ---
 ---[View wiki](https://wiki.facepunch.com/gmod/CMoveData:SetFinalJumpVelocity)
 ---@param jumpVel Vector
 function CMoveData:SetFinalJumpVelocity(jumpVel) end
 
----![(Shared)](https://github.com/user-attachments/assets/a356f942-57d7-4915-a8cc-559870a980fc) Sets an internal player movement variable `m_outStepHeight`.
+---![(Server)](https://github.com/user-attachments/assets/d8fbe13a-6305-4e16-8698-5be874721ca1) Sets an internal player movement variable `m_outStepHeight`.
 ---
 ---[View wiki](https://wiki.facepunch.com/gmod/CMoveData:SetFinalStepHeight)
 ---@param stepHeight number
 function CMoveData:SetFinalStepHeight(stepHeight) end
 
----![(Shared)](https://github.com/user-attachments/assets/a356f942-57d7-4915-a8cc-559870a980fc) Sets players forward speed.
+---![(Server)](https://github.com/user-attachments/assets/d8fbe13a-6305-4e16-8698-5be874721ca1) Sets players forward speed.
 ---
 ---[View wiki](https://wiki.facepunch.com/gmod/CMoveData:SetForwardSpeed)
 ---@param speed number New forward speed
 function CMoveData:SetForwardSpeed(speed) end
 
----![(Shared)](https://github.com/user-attachments/assets/a356f942-57d7-4915-a8cc-559870a980fc) Sets the impulse command. This isn't actually utilised in the engine anywhere.
+---![(Server)](https://github.com/user-attachments/assets/d8fbe13a-6305-4e16-8698-5be874721ca1) Sets the impulse command. This isn't actually utilised in the engine anywhere.
 ---
 ---[View wiki](https://wiki.facepunch.com/gmod/CMoveData:SetImpulseCommand)
 ---@param impulse number The impulse to set
 function CMoveData:SetImpulseCommand(impulse) end
 
----![(Shared)](https://github.com/user-attachments/assets/a356f942-57d7-4915-a8cc-559870a980fc) Sets the maximum player speed. Player won't be able to run or sprint faster then this value.
+---![(Server)](https://github.com/user-attachments/assets/d8fbe13a-6305-4e16-8698-5be874721ca1) Sets the maximum player speed. Player won't be able to run or sprint faster then this value.
 ---
 --- This also automatically sets [CMoveData:SetMaxSpeed](https://wiki.facepunch.com/gmod/CMoveData:SetMaxSpeed) when used in the [GM:SetupMove](https://wiki.facepunch.com/gmod/GM:SetupMove) hook. You must set it manually in the [GM:Move](https://wiki.facepunch.com/gmod/GM:Move) hook.
 ---
@@ -264,7 +264,7 @@ function CMoveData:SetImpulseCommand(impulse) end
 ---@param maxSpeed number The new maximum speed
 function CMoveData:SetMaxClientSpeed(maxSpeed) end
 
----![(Shared)](https://github.com/user-attachments/assets/a356f942-57d7-4915-a8cc-559870a980fc) Sets the maximum speed of the player. This must match with [CMoveData:SetMaxClientSpeed](https://wiki.facepunch.com/gmod/CMoveData:SetMaxClientSpeed) both, on server and client.
+---![(Server)](https://github.com/user-attachments/assets/d8fbe13a-6305-4e16-8698-5be874721ca1) Sets the maximum speed of the player. This must match with [CMoveData:SetMaxClientSpeed](https://wiki.facepunch.com/gmod/CMoveData:SetMaxClientSpeed) both, on server and client.
 ---
 --- Doesn't seem to be doing anything on it's own, use [CMoveData:SetMaxClientSpeed](https://wiki.facepunch.com/gmod/CMoveData:SetMaxClientSpeed) instead.
 ---
@@ -272,7 +272,7 @@ function CMoveData:SetMaxClientSpeed(maxSpeed) end
 ---@param maxSpeed number The new maximum speed
 function CMoveData:SetMaxSpeed(maxSpeed) end
 
----![(Shared)](https://github.com/user-attachments/assets/a356f942-57d7-4915-a8cc-559870a980fc) Sets the serverside move angles, making the movement keys act as if player was facing that direction.
+---![(Server)](https://github.com/user-attachments/assets/d8fbe13a-6305-4e16-8698-5be874721ca1) Sets the serverside move angles, making the movement keys act as if player was facing that direction.
 ---
 --- This function is predicted, and should be called shared with matching data on client and server.
 ---
@@ -280,37 +280,37 @@ function CMoveData:SetMaxSpeed(maxSpeed) end
 ---@param dir Angle The aim direction.
 function CMoveData:SetMoveAngles(dir) end
 
----![(Shared)](https://github.com/user-attachments/assets/a356f942-57d7-4915-a8cc-559870a980fc) Sets old aim angles. ( ? ) Doesn't seem to be doing anything.
+---![(Server)](https://github.com/user-attachments/assets/d8fbe13a-6305-4e16-8698-5be874721ca1) Sets old aim angles. ( ? ) Doesn't seem to be doing anything.
 ---
 ---[View wiki](https://wiki.facepunch.com/gmod/CMoveData:SetOldAngles)
 ---@param aimAng Angle The old angles
 function CMoveData:SetOldAngles(aimAng) end
 
----![(Shared)](https://github.com/user-attachments/assets/a356f942-57d7-4915-a8cc-559870a980fc) Sets the 'old' pressed buttons on the move data. These buttons are used to work out which buttons have been released, which have just been pressed and which are being held down.
+---![(Server)](https://github.com/user-attachments/assets/d8fbe13a-6305-4e16-8698-5be874721ca1) Sets the 'old' pressed buttons on the move data. These buttons are used to work out which buttons have been released, which have just been pressed and which are being held down.
 ---
 ---[View wiki](https://wiki.facepunch.com/gmod/CMoveData:SetOldButtons)
 ---@param buttons number A number representing which buttons were down, see Enums/IN
 function CMoveData:SetOldButtons(buttons) end
 
----![(Shared)](https://github.com/user-attachments/assets/a356f942-57d7-4915-a8cc-559870a980fc) Sets the players position.
+---![(Server)](https://github.com/user-attachments/assets/d8fbe13a-6305-4e16-8698-5be874721ca1) Sets the players position.
 ---
 ---[View wiki](https://wiki.facepunch.com/gmod/CMoveData:SetOrigin)
 ---@param pos Vector The position
 function CMoveData:SetOrigin(pos) end
 
----![(Shared)](https://github.com/user-attachments/assets/a356f942-57d7-4915-a8cc-559870a980fc) Sets players strafe speed.
+---![(Server)](https://github.com/user-attachments/assets/d8fbe13a-6305-4e16-8698-5be874721ca1) Sets players strafe speed.
 ---
 ---[View wiki](https://wiki.facepunch.com/gmod/CMoveData:SetSideSpeed)
 ---@param speed number Strafe speed
 function CMoveData:SetSideSpeed(speed) end
 
----![(Shared)](https://github.com/user-attachments/assets/a356f942-57d7-4915-a8cc-559870a980fc) Sets vertical speed of the player. ( Z axis of [CMoveData:SetVelocity](https://wiki.facepunch.com/gmod/CMoveData:SetVelocity) )
+---![(Server)](https://github.com/user-attachments/assets/d8fbe13a-6305-4e16-8698-5be874721ca1) Sets vertical speed of the player. ( Z axis of [CMoveData:SetVelocity](https://wiki.facepunch.com/gmod/CMoveData:SetVelocity) )
 ---
 ---[View wiki](https://wiki.facepunch.com/gmod/CMoveData:SetUpSpeed)
 ---@param speed number Vertical speed to set
 function CMoveData:SetUpSpeed(speed) end
 
----![(Shared)](https://github.com/user-attachments/assets/a356f942-57d7-4915-a8cc-559870a980fc) Sets the player's velocity
+---![(Server)](https://github.com/user-attachments/assets/d8fbe13a-6305-4e16-8698-5be874721ca1) Sets the player's velocity
 ---
 ---[View wiki](https://wiki.facepunch.com/gmod/CMoveData:SetVelocity)
 ---@param velocity Vector The velocity to set

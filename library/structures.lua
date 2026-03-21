@@ -805,7 +805,7 @@ EmitSoundInfo.SoundTime = 0
 ---
 --- There are approximately 134 different presets defined by the Source engine between 0 and 133. These presets represent different types of 'rooms' or environments.
 ---
---- [List of DSP's](https://developer.valvesoftware.com/wiki/Dsp_presets)
+--- DSP_Presets
 ---@type number?
 EmitSoundInfo.DSP = 0
 
@@ -840,6 +840,9 @@ EmitSoundInfo.Entity = nil
 ---The origin of the played sound.
 ---@type Vector
 EmitSoundInfo.Pos = nil
+
+---@class ENT : ENTITY
+ENT = {}
 
 ---The base entity to derive from. This **must** be a valid Lua entity
 ---@type string
@@ -1449,7 +1452,7 @@ MatProxyData.bind = nil
 ---
 --- Used by:
 --- * [IMesh:BuildFromTriangles](https://wiki.facepunch.com/gmod/IMesh:BuildFromTriangles)
---- * [Entity:PhysicsFromMesh](https://wiki.facepunch.com/gmod/Entity:PhysicsFromMesh)
+--- * [Entity:PhysicsFromMesh](https://wiki.facepunch.com/gmod/Entity:PhysicsFromMesh) (only uses `pos` field)
 
 ---
 ---[View wiki](https://wiki.facepunch.com/gmod/Structures/MeshVertex)
@@ -1516,7 +1519,7 @@ MeshVertex.userdata = nil
 ---
 --- The total sum of their `weight` values should be `1`
 ---
---- Current added exclusively by util.GetModelMeshes
+--- Currently added exclusively by util.GetModelMeshes
 ---@type table[]
 MeshVertex.weights = nil
 
@@ -1630,9 +1633,11 @@ ModelInfo.Bones = nil
 --- Each sequence is a table with the following info:
 --- * string Name
 --- * string Activity
+--- * number ActivityID
+--- * number ActivityWeight
 --- * table Events
 ---
---- `Events` table is a list of tables with following memebers:
+--- `Events` table is a list of tables with following members:
 --- * number Cycle
 --- * number Event
 --- * string Name
@@ -2836,6 +2841,9 @@ SurfacePropertyData.stepRightSound = nil
 ---@type string
 SurfacePropertyData.strainSound = nil
 
+---@class SWEP : WEAPON
+SWEP = {}
+
 ---Entity class name of the SWEP (file or folder name of your SWEP). This is
 ---             set automatically
 ---@type string
@@ -3139,6 +3147,21 @@ TextureData.h = nil
 ---The texture color. See Color.
 ---@type Color?
 TextureData.color = color_white
+
+---
+--- The **TOOL** table is used in Sandbox tool creation. You can find a list of callbacks on the  page and a list of methods on the  page. Do note that some of the fields below have no effect on server-side operations.
+---
+--- The tool information box drawn on the HUD while your tool is selected has 2 values that are set by [language.Add](https://wiki.facepunch.com/gmod/language.Add).
+--- * `tool.[tool mode].name` - The tool name (Note this is NOT the same as TOOL.Name)
+--- * `tool.[tool mode].desc` - The tool description
+---
+--- Ensure that all tool file names are entirely lowercase.  Including capital letters can lead to unintended behavior.
+---
+---@class Tool
+Tool = {}
+
+---@class TOOL : Tool
+TOOL = Tool
 
 ---If set to false, the tool won't be added to the tool menu and players will have to access it by other means.
 ---@type boolean?

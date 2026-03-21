@@ -896,7 +896,7 @@ function _G.Either(condition, truevar, falsevar) end
 ---@param soundLevel? number The sound level of the sound, see Enums/SNDLVL
 ---@param soundFlags? number The flags of the sound, see Enums/SND
 ---@param pitch? number The pitch of the sound, 0-255
----@param DSP? number Digital Sound Processor for this sound.
+---@param DSP? number Digital Sound Processor for this sound. DSP_Presets
 function _G.EmitSentence(soundName, position, entity, channel, volume, soundLevel, soundFlags, pitch, DSP) end
 
 ---![(Shared)](https://github.com/user-attachments/assets/a356f942-57d7-4915-a8cc-559870a980fc) Emits the specified sound at the specified position. See also [Entity:EmitSound](https://wiki.facepunch.com/gmod/Entity:EmitSound) if you wish to play sounds on a specific entity.
@@ -920,7 +920,7 @@ function _G.EmitSentence(soundName, position, entity, channel, volume, soundLeve
 ---@param soundLevel? SNDLVL The sound level of the sound, see Enums/SNDLVL
 ---@param soundFlags? SND The flags of the sound, see Enums/SND
 ---@param pitch? number The pitch of the sound, 0-255
----@param dsp? number The DSP preset for this sound. [List of DSP presets](https://developer.valvesoftware.com/wiki/Dsp_presets)
+---@param dsp? number The DSP preset for this sound. DSP_Presets
 ---@param filter? CRecipientFilter If set serverside, the sound will only be networked to the clients in the filter.
 function _G.EmitSound(soundName, position, entity, channel, volume, soundLevel, soundFlags, pitch, dsp, filter) end
 
@@ -1858,9 +1858,11 @@ function _G.IsUselessModel(modelName) end
 ---
 --- Checks that an object is not [nil](https://wiki.facepunch.com/gmod/nil), has an `IsValid` method and if this method returns `true`. If the object has no `IsValid` method, it will return `false`.
 ---
---- **NOTE**: If you are sure that the object you are about to check is not `nil` and has the `IsValid` method, it would be more faster to call it directly rather than using `IsValid`.
+--- **NOTE**: If you are sure that the object you are about to check is not `nil` and has the `IsValid` method, it would be faster to call it directly rather than using `IsValid`.
 ---
 --- **NOTE**: Due to vehicles being technically valid the moment they're spawned, also use [Vehicle:IsValidVehicle](https://wiki.facepunch.com/gmod/Vehicle:IsValidVehicle) to make sure they're fully initialized.
+---
+--- **WARNING**: Putting a number in the argument will cause an error.
 ---
 ---[View wiki](https://wiki.facepunch.com/gmod/Global.IsValid)
 ---@param toBeValidated any The table or object to be validated.
@@ -1975,7 +1977,9 @@ function _G.LoadLastMap() end
 ---[View wiki](https://wiki.facepunch.com/gmod/Global.LoadNewsList)
 function _G.LoadNewsList() end
 
----![(Client)](https://github.com/user-attachments/assets/a5f6ba64-374d-42f0-b2f4-50e5c964e808) Loads all preset settings for the [presets](https://wiki.facepunch.com/gmod/presets) and returns them in a table
+---![(Client)](https://github.com/user-attachments/assets/a5f6ba64-374d-42f0-b2f4-50e5c964e808) **INTERNAL**: This is used internally - although you're able to use it you probably shouldn't.
+---
+--- Loads all preset settings for the [presets](https://wiki.facepunch.com/gmod/presets) and returns them in a table
 ---
 ---[View wiki](https://wiki.facepunch.com/gmod/Global.LoadPresets)
 ---@return table # Preset data
@@ -2082,8 +2086,9 @@ function _G.MenuGetAddonData(workshopItemID) end
 ---
 ---[View wiki](https://wiki.facepunch.com/gmod/Global.Mesh)
 ---@param mat? IMaterial The material the mesh is intended to be rendered with. It's merely a hint that tells that mesh what vertex format it should use.
+---@param boneWeights? number Number of bone weights per vertex. This value can be set to 2 to enable skinning and rendering via IMesh:DrawSkinned. This was recently added and is only available on the Dev Branch right now.
 ---@return IMesh # The created object.
-function _G.Mesh(mat) end
+function _G.Mesh(mat, boneWeights) end
 
 ---![(Shared and Menu)](https://github.com/user-attachments/assets/8f5230ff-38f7-493b-b9fc-cc70ffd5b3f4) Runs [util.PrecacheModel](https://wiki.facepunch.com/gmod/util.PrecacheModel) and returns the string.
 ---
@@ -2674,7 +2679,9 @@ function _G.SaveHideNews(hide) end
 ---@param category string The name of the category to which this map belongs.
 function _G.SaveLastMap(map, category) end
 
----![(Client)](https://github.com/user-attachments/assets/a5f6ba64-374d-42f0-b2f4-50e5c964e808) Overwrites all presets with the supplied table. Used by the [presets](https://wiki.facepunch.com/gmod/presets) for preset saving
+---![(Client)](https://github.com/user-attachments/assets/a5f6ba64-374d-42f0-b2f4-50e5c964e808) **INTERNAL**: This is used internally - although you're able to use it you probably shouldn't.
+---
+--- Overwrites all presets with the supplied table. Used by the [presets](https://wiki.facepunch.com/gmod/presets) for preset saving
 ---
 ---[View wiki](https://wiki.facepunch.com/gmod/Global.SavePresets)
 ---@param presets table Presets to be saved
@@ -3024,6 +3031,7 @@ function _G.Sound(soundPath) end
 
 ---![(Shared)](https://github.com/user-attachments/assets/a356f942-57d7-4915-a8cc-559870a980fc) Returns the approximate duration of the specified sound in seconds, for `.wav` and `.mp3` sounds.
 --- 	This function only works on mp3 files if the file is encoded with constant bitrate.
+--- 	**NOTE**: This function will not work with sound files prepended with a [sound character](https://developer.valvesoftware.com/wiki/Soundscripts#Sound_Characters).
 ---
 ---[View wiki](https://wiki.facepunch.com/gmod/Global.SoundDuration)
 ---@param soundName string The sound file path.

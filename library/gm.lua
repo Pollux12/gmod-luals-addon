@@ -468,7 +468,7 @@ function GM:GameContentChanged() end
 ---![(Server)](https://github.com/user-attachments/assets/d8fbe13a-6305-4e16-8698-5be874721ca1) An internal function used to get an untranslated string to show in the kill feed as the entity's name. See [GM:SendDeathNotice](https://wiki.facepunch.com/gmod/GM:SendDeathNotice)
 ---
 ---[View wiki](https://wiki.facepunch.com/gmod/GM:GetDeathNoticeEntityName)
----@param name String The name of the entity.
+---@param name string|Entity The name of the entity.
 ---@return string # The untranslated name for given NPC. The translation/localization would happen on the client.
 function GM:GetDeathNoticeEntityName(name) end
 
@@ -810,9 +810,9 @@ function GM:LoadGModSave(data, map, timestamp) end
 ---![(Menu)](https://github.com/user-attachments/assets/62703d98-767e-4cf2-89b3-390b1c2c5cd9) Called while an addon from the Steam workshop is downloading. Used by default to update details on the fancy workshop download panel.
 ---
 ---[View wiki](https://wiki.facepunch.com/gmod/GM:LoadGModSaveFailed)
----@return string # Failure Reason.
----@return string # the workshop ID of the missing map (if found). Can be an empty string
-function GM:LoadGModSaveFailed() end
+---@param reason string Failure Reason.
+---@param workshopid string the workshop ID of the missing map (if found). Can be an empty string
+function GM:LoadGModSaveFailed(reason, workshopid) end
 
 ---![(Menu)](https://github.com/user-attachments/assets/62703d98-767e-4cf2-89b3-390b1c2c5cd9) Called when `menu.lua` has finished loading.
 ---
@@ -983,7 +983,7 @@ function GM:OnEntityCreated(entity) end
 ---@param new number The new water level.
 function GM:OnEntityWaterLevelChanged(entity, old, new) end
 
----![(Shared)](https://github.com/user-attachments/assets/a356f942-57d7-4915-a8cc-559870a980fc) Called when the gamemode is loaded.
+---![(Shared)](https://github.com/user-attachments/assets/a356f942-57d7-4915-a8cc-559870a980fc) Called when the gamemode is loaded. [gmod.GetGamemode](https://wiki.facepunch.com/gmod/gmod.GetGamemode) will be functional at this point.
 ---
 --- [Global.LocalPlayer](https://wiki.facepunch.com/gmod/Global.LocalPlayer)() returns NULL at the time this is run.
 ---
@@ -1144,7 +1144,7 @@ function GM:OnPlayerPhysicsPickup(ply, ent) end
 ---[View wiki](https://wiki.facepunch.com/gmod/GM:OnReloaded)
 function GM:OnReloaded() end
 
----![(Client)](https://github.com/user-attachments/assets/a5f6ba64-374d-42f0-b2f4-50e5c964e808) Called when the player's screen resolution of the game changes.
+---![(Client)](https://github.com/user-attachments/assets/a5f6ba64-374d-42f0-b2f4-50e5c964e808) Called when the player's screen resolution of the game changes. This also called when changing MSAA settings.
 ---
 --- [Global.ScrW](https://wiki.facepunch.com/gmod/Global.ScrW) and [Global.ScrH](https://wiki.facepunch.com/gmod/Global.ScrH) will return the new values when this hook is called.
 ---
