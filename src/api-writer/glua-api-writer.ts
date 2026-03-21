@@ -103,6 +103,18 @@ export class GluaApiWriter {
     return this.classAliases.get(className) || [];
   }
 
+  private getClassOverride(className: string): string | undefined {
+    const canonicalClassName = this.resolveToCanonicalClassName(className);
+    const overrideKeys = [`class.${canonicalClassName}`, ...this.getClassAliases(canonicalClassName).map(alias => `class.${alias}`)];
+
+    for (const key of overrideKeys) {
+      const override = this.pageOverrides.get(key);
+      if (override) return override;
+    }
+
+    return undefined;
+  }
+
   /**
    * Resolves a class name to its canonical form.
    * If the class name is an alias, returns the canonical name.
@@ -168,9 +180,9 @@ export class GluaApiWriter {
     const isAlias = canonicalClassName !== className;
 
     if (!this.writtenClasses.has(canonicalClassName)) {
-      const classOverride = `class.${canonicalClassName}`;
-      if (this.pageOverrides.has(classOverride)) {
-        api += this.pageOverrides.get(classOverride)!.replace(/\n$/g, '') + '\n\n';
+      const classOverride = this.getClassOverride(className);
+      if (classOverride) {
+        api += classOverride.replace(/\n$/g, '') + '\n\n';
       } else {
         if (realm) {
           api += `---${this.formatRealm(realm)} ${description ? `${wrapInComment(description)}\n` : ''}\n`;
@@ -211,11 +223,6 @@ export class GluaApiWriter {
       }
 
       this.writtenClasses.add(canonicalClassName);
-    }
-
-    // If this was an alias, don't generate any additional content
-    if (isAlias) {
-      return '';
     }
 
     return api;
@@ -466,29 +473,6 @@ export class GluaApiWriter {
   }
 
   public writeToDisk() {
-    // First, ensure any class.* overrides without corresponding wiki pages get emitted.
-    // These aren't triggered via writeClassStart if the wiki never provided that class.
-    const orphanClassOverrides: string[] = [];
-    for (const [key, value] of this.pageOverrides.entries()) {
-      const m = key.match(/^class\.(.+)$/);
-      if (m) {
-        const className = m[1];
-        // Respect canonical alias resolution
-        const canonical = this.resolveToCanonicalClassName(className);
-        if (!this.writtenClasses.has(canonical)) {
-          // Mark as written to avoid duplicate emission later should a late page appear.
-          this.writtenClasses.add(canonical);
-          // Normalize trailing newline
-          orphanClassOverrides.push(value.endsWith('\n') ? value : value + '\n');
-        }
-      }
-    }
-    if (orphanClassOverrides.length > 0) {
-      const customFile = `${this.outputDirectory}/custom_classes.lua`;
-      const payload = ['---@meta', '', ...orphanClassOverrides].join('\n');
-      fs.writeFileSync(customFile, payload);
-    }
-
     this.files.forEach((pages: IndexedWikiPage[], filePath: string) => {
       let api = this.makeApiFromPages(pages);
 
@@ -496,6 +480,28 @@ export class GluaApiWriter {
         fs.appendFileSync(filePath, '---@meta\n\n' + api);
       }
     });
+
+    // After all known pages have been written, emit any remaining class.* overrides
+    // that were never consumed inline by writeClassStart.
+    const orphanClassOverrides: string[] = [];
+    for (const [key, value] of this.pageOverrides.entries()) {
+      const m = key.match(/^class\.(.+)$/);
+      if (!m) continue;
+
+      const canonical = this.resolveToCanonicalClassName(m[1]);
+      if (!this.writtenClasses.has(canonical)) {
+        this.writtenClasses.add(canonical);
+        orphanClassOverrides.push(value.endsWith('\n') ? value : value + '\n');
+      }
+    }
+
+    const customFile = `${this.outputDirectory}/custom_classes.lua`;
+    if (orphanClassOverrides.length > 0) {
+      const payload = ['---@meta', '', ...orphanClassOverrides].join('\n');
+      fs.writeFileSync(customFile, payload);
+    } else if (fs.existsSync(customFile)) {
+      fs.rmSync(customFile);
+    }
   }
 
   public static transformType(type: string, callback?: FunctionCallback) {
