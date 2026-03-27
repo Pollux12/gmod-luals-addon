@@ -679,10 +679,45 @@ describe('GLua API Writer', () => {
     });
 
     expect(output).toContain('---@generic T : Entity');
-    expect(output).toContain('---@param class T Class name.');
+    expect(output).toContain('---@param class `T` Class name.');
     expect(output).toContain('---@return T # Created entity.');
     expect(output).toContain('---@realm server');
     expect(output).toContain('---@source https://wiki.facepunch.com/gmod/ents.Create');
+  });
+
+  it('should emit string-template generic annotations for collection factories', () => {
+    const writer = new GluaApiWriter();
+    const output = writer.writePage(<LibraryFunction>{
+      name: 'FindByClass',
+      address: 'ents.FindByClass',
+      parent: 'ents',
+      dontDefineParent: true,
+      description: 'Find entities by class.',
+      realm: 'shared',
+      type: 'libraryfunc',
+      url: 'https://wiki.facepunch.com/gmod/ents.FindByClass',
+      arguments: [
+        {
+          args: [{
+            name: 'class',
+            type: 'string',
+            description: 'Class name.',
+          }],
+        },
+      ],
+      returns: [
+        {
+          type: 'Entity[]',
+          description: 'Found entities.',
+        },
+      ],
+    });
+
+    expect(output).toContain('---@generic T : Entity');
+    expect(output).toContain('---@param class `T` Class name.');
+    expect(output).toContain('---@return T[] # Found entities.');
+    expect(output).toContain('---@realm shared');
+    expect(output).toContain('---@source https://wiki.facepunch.com/gmod/ents.FindByClass');
   });
 
   // it('should be able to write Annotated API files directly from wiki pages', async () => {
