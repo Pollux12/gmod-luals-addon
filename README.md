@@ -1,5 +1,7 @@
 # Garry's Mod LuaLS Addon + Plugin
 
+> **Deprecated:** This LuaLS plugin is no longer actively maintained. Please use my new Garry's Mod extension instead: <https://github.com/Pollux12/vscode-gmod-glua-ls>
+
 This repository is a re-write of my personal LuaLS addon to instead use annotations from the upstream glua-api-snippets project (rather my my own scuffed system) and merge features from two other plugins. Alongside all the features in the original, it contains a [plugin](https://luals.github.io/wiki/plugins/) that allows for several new features and extended functionality over the original.
 
 ## Features
