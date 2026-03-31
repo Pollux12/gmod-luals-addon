@@ -120,3 +120,299 @@ color_black = Color(0, 0, 0, 255)
 ---@type Color
 ---A color with only the alpha value set to 0.
 color_transparent = Color(255, 255, 255, 0)
+
+--[[
+  Derma Panel Globals
+  These are derma classes defined via derma.DefineControl
+--]]
+
+---@type DIconLayout
+DIconLayout = nil
+
+---@type DMenuOptionCVar
+DMenuOptionCVar = nil
+
+---@type DPanelList
+DPanelList = nil
+
+---@type DListView_Line
+DListView_Line = nil
+
+---@type DNumSlider
+DNumSlider = nil
+
+---@type DPanelOverlay
+DPanelOverlay = nil
+
+---@type DListView_ColumnPlain
+DListView_ColumnPlain = nil
+
+---@type DDragBase
+DDragBase = nil
+
+---@type DIconBrowser
+DIconBrowser = nil
+
+---@type DHTML
+DHTML = nil
+
+---@type DCategoryList
+DCategoryList = nil
+
+---@type DImage
+DImage = nil
+
+---@type DTextEntry
+DTextEntry = nil
+
+---@type DListView_DraggerBar
+DListView_DraggerBar = nil
+
+---@type DColorMixer
+DColorMixer = nil
+
+---@type DFrame
+DFrame = nil
+
+---@type DCheckBox
+DCheckBox = nil
+
+---@type DColorCombo
+DColorCombo = nil
+
+---@type DScrollBarGrip
+DScrollBarGrip = nil
+
+---@type Slider
+Slider = nil
+
+---@type DHorizontalDivider
+DHorizontalDivider = nil
+
+---@type DSlider
+DSlider = nil
+
+---@type DForm
+DForm = nil
+
+---@type DNumPad
+DNumPad = nil
+
+---@type DListViewLine
+DListViewLine = nil
+
+---@type DPanelSelect
+DPanelSelect = nil
+
+---@type DListView_Column
+DListView_Column = nil
+
+---@type DListViewHeaderLabel
+DListViewHeaderLabel = nil
+
+---@type DDrawer
+DDrawer = nil
+
+---@type DScrollPanel
+DScrollPanel = nil
+
+---@type DListBoxItem
+DListBoxItem = nil
+
+---@type DListView
+DListView = nil
+
+---@type DCollapsibleCategory
+DCollapsibleCategory = nil
+
+---@type DImageButton
+DImageButton = nil
+
+---@type DListLayout
+DListLayout = nil
+
+---@type DBinder
+DBinder = nil
+
+---@type DNotify
+DNotify = nil
+
+---@type DColorButton
+DColorButton = nil
+
+---@type VoiceNotify
+VoiceNotify = nil
+
+---@type DColorPalette
+DColorPalette = nil
+
+---@type DNumberScratch
+DNumberScratch = nil
+
+---@type DPanel
+DPanel = nil
+
+---@type DListViewLabel
+DListViewLabel = nil
+
+---@type DProperty_Int
+DProperty_Int = nil
+
+---@type DProperty_VectorColor
+DProperty_VectorColor = nil
+
+---@type DPropertySheet
+DPropertySheet = nil
+
+---@type DProperty_Entity
+DProperty_Entity = nil
+
+---@type DProperty_Float
+DProperty_Float = nil
+
+---@type DProperty_Combo
+DProperty_Combo = nil
+
+---@type DHScrollBar
+DHScrollBar = nil
+
+---@type DEntityProperties
+DEntityProperties = nil
+
+---@type DProperty_Boolean
+DProperty_Boolean = nil
+
+---@type DVScrollBar
+DVScrollBar = nil
+
+---@type DVerticalDivider
+DVerticalDivider = nil
+
+---@type DHTMLControls
+DHTMLControls = nil
+
+---@type DVerticalDividerBar
+DVerticalDividerBar = nil
+
+---@type DTree_Node_Button
+DTree_Node_Button = nil
+
+---@type DNumberWang
+DNumberWang = nil
+
+---@type DTree_Node
+DTree_Node = nil
+
+---@type DLabelEditable
+DLabelEditable = nil
+
+---@type DGrid
+DGrid = nil
+
+---@type DTooltip
+DTooltip = nil
+
+---@type DLabel
+DLabel = nil
+
+---@type DExpandButton
+DExpandButton = nil
+
+---@type DKillIcon
+DKillIcon = nil
+
+---@type DMenu
+DMenu = nil
+
+---@type DCategoryHeader
+DCategoryHeader = nil
+
+---@type DTileLayout
+DTileLayout = nil
+
+---@type DSprite
+DSprite = nil
+
+---@type DModelSelect
+DModelSelect = nil
+
+---@type DSizeToContents
+DSizeToContents = nil
+
+---@type DShape
+DShape = nil
+
+---@type DRGBPicker
+DRGBPicker = nil
+
+---@type DModelSelectMulti
+DModelSelectMulti = nil
+
+---@type DMenuOption
+DMenuOption = nil
+
+---@type DProperty_Generic
+DProperty_Generic = nil
+
+---@type DMenuBar
+DMenuBar = nil
+
+---@type DCheckBoxLabel
+DCheckBoxLabel = nil
+
+---@type DTab
+DTab = nil
+
+---@type DProperties
+DProperties = nil
+
+---@type DProgress
+DProgress = nil
+
+---@type DAlphaBar
+DAlphaBar = nil
+
+---@type DPanPanel
+DPanPanel = nil
+
+---@type DModelPanel
+DModelPanel = nil
+
+---@type DFileBrowser
+DFileBrowser = nil
+
+---@type DColorCube
+DColorCube = nil
+
+---@type Button
+Button = nil
+
+---@type DListBox
+DListBox = nil
+
+---@type DAdjustableModelPanel
+DAdjustableModelPanel = nil
+
+---@type DComboBox
+DComboBox = nil
+
+---@type DColumnSheet
+DColumnSheet = nil
+
+---@type DButton
+DButton = nil
+
+---@type DHorizontalDividerBar
+DHorizontalDividerBar = nil
+
+---@type DBubbleContainer
+DBubbleContainer = nil
+
+---@type DTree
+DTree = nil
+
+---@type DLabelURL
+DLabelURL = nil
+
+---@type DHorizontalScroller
+DHorizontalScroller = nil
