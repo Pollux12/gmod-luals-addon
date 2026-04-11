@@ -13,4 +13,4 @@
 ---@operator mul(number|Vector): Vector
 ---@operator sub(Vector): Vector
 ---@operator unm: Vector
-Vector = {}
+local Vector = {}

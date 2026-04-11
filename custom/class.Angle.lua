@@ -18,4 +18,4 @@
 ---@operator mul(number): Angle
 ---@operator sub(Angle): Angle
 ---@operator unm: Angle
-Angle = {}
+local Angle = {}

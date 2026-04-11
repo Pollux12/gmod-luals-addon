@@ -9,4 +9,4 @@
 ---@operator mul(VMatrix): VMatrix
 ---@operator sub(VMatrix): VMatrix
 ---@operator unm: VMatrix
-VMatrix = {}
+local VMatrix = {}
