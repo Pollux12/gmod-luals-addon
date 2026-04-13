@@ -1,0 +1,23 @@
+---@alias gmod.collectgarbage_action
+---| "collect"
+---| "stop"
+---| "restart"
+---| "count"
+---| "step"
+---| "setpause"
+---| "setstepmul"
+---| "isrunning" # Only available on x86-64 builds (LuaJIT version difference).
+
+---Executes the specified action on the garbage collector.
+---@realm shared
+---@realm menu
+---@source https://wiki.facepunch.com/gmod/Global.collectgarbage
+---@overload fun(action: "count"): number # Number of kilobytes of memory used by Lua.
+---@overload fun(action: "step", arg?: integer): boolean # True if a garbage collection cycle was finished.
+---@overload fun(action: "setpause", arg?: integer): integer # Previous value for GC pause.
+---@overload fun(action: "setstepmul", arg?: integer): integer # Previous value for GC step multiplier.
+---@overload fun(action: "isrunning"): boolean # Whether the collector is currently running (x86-64 only).
+---@param action? gmod.collectgarbage_action The action to run. Defaults to "collect" when omitted.
+---@param arg? integer The argument for "step", "setpause" and "setstepmul".
+---@return any # Return type depends on the selected action.
+function _G.collectgarbage(action, arg) end
