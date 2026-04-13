@@ -18,7 +18,7 @@
 
 ---@alias debuglib.InfoWhat
 ---|+"n"     # `name`, `namewhat`
----|+"S"     # `source`, `short_src`, `linedefined`, `lalinedefined`, `what`
+---|+"S"     # `source`, `short_src`, `linedefined`, `lastlinedefined`, `what`
 ---|+"l"     # `currentline`
 ---|+"t"     # `istailcall`
 ---|+"u"     # `nups`, `nparams`, `isvararg`
@@ -27,27 +27,16 @@
 ---|+"L"     # `activelines`
 ---| string
 
+---Returns debug information about a function.
 ---
---- Returns a table with information about a function. You can give the
---- function directly, or you can give a number as the value of `f`,
---- which means the function running at level `f` of the call stack
---- of the given thread: level 0 is the current function (`getinfo` itself);
---- level 1 is the function that called `getinfo` (except for tail calls, which
---- do not count on the stack); and so on. If `f` is a number larger than
---- the number of active functions, then `getinfo` returns **nil**.
----
---- The returned table can contain all the fields returned by `lua_getinfo`,
---- with the string `what` describing which fields to fill in. The default for
---- `what` is to get all information available, except the table of valid
---- lines. If present, the option '`f`' adds a field named `func` with the
---- function itself. If present, the option '`L`' adds a field named
---- `activelines` with the table of valid lines.
----
---- For instance, the expression `debug.getinfo(1,"n").name` returns a table
---- with a name for the current function, if a reasonable name can be found,
---- and the expression `debug.getinfo(print)` returns a table with all available
---- information about the `print` function.
----@overload fun(f: int|function, what?: debuglib.InfoWhat):debuglib.DebugInfo?
+---Pass either a function or a stack level as `f`.
+---Level 0 is the `debug.getinfo` call itself, level 1 is its caller, and so on.
+---For out-of-range stack levels, this can return nil.
+---@overload fun(f: function, what?: debuglib.InfoWhat): debuglib.DebugInfo
+---@overload fun(f: 0, what?: debuglib.InfoWhat): debuglib.DebugInfo
+---@overload fun(f: integer, what?: debuglib.InfoWhat): debuglib.DebugInfo?
+---@overload fun(thread: thread, f: function, what?: debuglib.InfoWhat): debuglib.DebugInfo
+---@overload fun(thread: thread, f: 0, what?: debuglib.InfoWhat): debuglib.DebugInfo
 ---@param thread thread
 ---
 ---Takes either a function or a number representing the stack level as an argument. Stack level 0 always corresponds to the debug.getinfo call, 1 would be the function calling debug.getinfo in most cases, and so on.
