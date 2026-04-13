@@ -20,6 +20,7 @@ jobs:
       - name: Install dependencies
         run: npm ci
       - name: Check if there have been changes to the wiki
+        if: ${{ github.event_name == 'schedule' }}
         id: wiki_confirm_no_changes
         continue-on-error: true
         run: |
@@ -29,30 +30,31 @@ jobs:
             npm run wiki-check-changed $(git tag -l --sort=-v:refname)
           fi
       - name: Scrape wiki
-        if: ${{ steps.wiki_confirm_no_changes.outcome == 'failure' }}
+        if: ${{ github.event_name != 'schedule' || steps.wiki_confirm_no_changes.outcome == 'failure' }}
         run: npm run scrape-wiki
       - name: Run tests
-        if: ${{ steps.wiki_confirm_no_changes.outcome == 'failure' }}
+        if: ${{ github.event_name != 'schedule' || steps.wiki_confirm_no_changes.outcome == 'failure' }}
         run: npm test
       - name: Format the output with StyLua
-        if: ${{ steps.wiki_confirm_no_changes.outcome == 'failure' }}
+        if: ${{ github.event_name != 'schedule' || steps.wiki_confirm_no_changes.outcome == 'failure' }}
         uses: JohnnyMorganz/stylua-action@v2.0.0
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           version: latest
           args: --no-editorconfig output/
       - name: Tag latest scrape revision
-        if: ${{ steps.wiki_confirm_no_changes.outcome == 'failure' }}
+        if: ${{ github.event_name != 'schedule' || steps.wiki_confirm_no_changes.outcome == 'failure' }}
         run: |
-          tag=$(node -e "const fs=require('fs'); const metadata=JSON.parse(fs.readFileSync('output/__metadata.json','utf8')); const tagName=new Date(metadata.lastUpdate).toISOString().replace(/:/g,'-').slice(0,-5).replace('T','_'); process.stdout.write(tagName);")
+          build_tag=$(date -u +%Y-%m-%dT%H:%M:%SZ | sed 's/:/-/g' | sed 's/T/_/')
+          tag="$build_tag"
           if git rev-parse -q --verify "refs/tags/$tag" >/dev/null 2>&1; then
-            echo "Tag $tag already exists."
-          else
-            git tag "$tag"
-            git push origin "refs/tags/$tag"
+            echo "Tag $tag already exists. Falling back to build run number."
+            tag="${build_tag}-${GITHUB_RUN_NUMBER}"
           fi
+          git tag "$tag"
+          git push origin "refs/tags/$tag"
       - name: Publish annotations to branch
-        if: ${{ steps.wiki_confirm_no_changes.outcome == 'failure' }}
+        if: ${{ github.event_name != 'schedule' || steps.wiki_confirm_no_changes.outcome == 'failure' }}
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
