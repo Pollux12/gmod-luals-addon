@@ -1,0 +1,15 @@
+---This functions main purpose is to replace certain character sequences in a string using [Patterns](https://wiki.facepunch.com/gmod/Patterns).
+---@realm shared
+---@realm menu
+---@source https://wiki.facepunch.com/gmod/string.gsub
+---@param string string String which should be modified.
+---@param pattern string The pattern that defines what should be matched and eventually be replaced.
+---@param replacement string|table|fun(...: string): string In case of a string the matched sequence will be replaced with it.
+---
+--- In case of a table, the matched sequence will be used as key and the table will tested for the key, if a value exists it will be used as replacement.
+---
+--- In case of a function all matches will be passed as parameters to the function, the return value(s) of the function will then be used as replacement.
+---@param maxReplaces? number Maximum number of replacements to be made.
+---@return string # replaceResult
+---@return number # replaceCount
+function string.gsub(string, pattern, replacement, maxReplaces) end
