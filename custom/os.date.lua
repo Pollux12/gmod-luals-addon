@@ -1,8 +1,38 @@
----Returns the date/time as a formatted string or in a table.
----@realm shared
----@realm menu
----@source https://wiki.facepunch.com/gmod/os.date
----@param format? string The format string. If `*t` or `!*t`, returns a [Structures/DateData](https://wiki.facepunch.com/gmod/Structures/DateData) table instead.
----@param time? number Time to use for the format.
----@return string # Formatted date string, or a DateData table if format is `*t` or `!*t`.
+---
+--- Returns a string or a table containing date and time, formatted according
+--- to the given string `format`.
+---
+--- If the `time` argument is present, this is the time to be formatted (see
+--- the `os.time` function for a description of this value). Otherwise,
+--- `date` formats the current time.
+---
+--- If `format` starts with '`!`', then the date is formatted in Coordinated
+--- Universal Time. After this optional character, if `format` is the string
+--- "`*t`", then `date` returns a table with the following fields:
+---
+--- **`year`** (four digits)
+--- **`month`** (1–12)
+--- **`day`** (1-31)
+--- **`hour`** (0-23)
+--- **`min`** (0-59)
+--- **`sec`** (0-61), due to leap seconds
+--- **`wday`** (weekday, 1–7, Sunday is 1)
+--- **`yday`** (day of the year, 1–366)
+--- **`isdst`** (daylight saving flag, a boolean). This last field may be absent
+--- if the information is not available.
+---
+--- If `format` is not "`*t`", then `date` returns the date as a string,
+--- formatted according to the same rules as the ISO C function `strftime`.
+---
+--- When called without arguments, `date` returns a reasonable date and time
+--- representation that depends on the host system and on the current locale.
+--- (More specifically, `os.date()` is equivalent to `os.date("%c")`.)
+---
+--- On non-POSIX systems, this function may be not thread safe because of its
+--- reliance on C function `gmtime` and C function `localtime`.
+---@overload fun(fmt:"*t", time?: number):std.osdate
+---@overload fun(fmt:"!*t", time?: number):std.osdate
+---@param format string # The format string. If `*t` or `!*t`, returns a [Structures/DateData](https://wiki.facepunch.com/gmod/Structures/DateData) table instead.
+---@param time? number # Time to use for the format.
+---@return string|DateData # Formatted date string, or a DateData table if format is `*t` or `!*t`.
 function os.date(format, time) end
