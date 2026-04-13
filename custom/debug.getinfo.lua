@@ -1,0 +1,71 @@
+---@class debuglib.DebugInfo
+---@field name            string
+---@field namewhat        string
+---@field source          string
+---@field short_src       string
+---@field linedefined     integer
+---@field lastlinedefined integer
+---@field what            string
+---@field currentline     integer
+---@field istailcall      boolean
+---@field nups            integer
+---@field nparams         integer
+---@field isvararg        boolean
+---@field func            function
+---@field ftransfer       integer
+---@field ntransfer       integer
+---@field activelines     table
+
+---@alias debuglib.InfoWhat
+---|+"n"     # `name`, `namewhat`
+---|+"S"     # `source`, `short_src`, `linedefined`, `lalinedefined`, `what`
+---|+"l"     # `currentline`
+---|+"t"     # `istailcall`
+---|+"u"     # `nups`, `nparams`, `isvararg`
+---|+"f"     # `func`
+---|+"r"     # `ftransfer`, `ntransfer`
+---|+"L"     # `activelines`
+---| string
+
+---
+--- Returns a table with information about a function. You can give the
+--- function directly, or you can give a number as the value of `f`,
+--- which means the function running at level `f` of the call stack
+--- of the given thread: level 0 is the current function (`getinfo` itself);
+--- level 1 is the function that called `getinfo` (except for tail calls, which
+--- do not count on the stack); and so on. If `f` is a number larger than
+--- the number of active functions, then `getinfo` returns **nil**.
+---
+--- The returned table can contain all the fields returned by `lua_getinfo`,
+--- with the string `what` describing which fields to fill in. The default for
+--- `what` is to get all information available, except the table of valid
+--- lines. If present, the option '`f`' adds a field named `func` with the
+--- function itself. If present, the option '`L`' adds a field named
+--- `activelines` with the table of valid lines.
+---
+--- For instance, the expression `debug.getinfo(1,"n").name` returns a table
+--- with a name for the current function, if a reasonable name can be found,
+--- and the expression `debug.getinfo(print)` returns a table with all available
+--- information about the `print` function.
+---@overload fun(f: int|function, what?: debuglib.InfoWhat):debuglib.DebugInfo?
+---@param thread thread
+---
+---Takes either a function or a number representing the stack level as an argument. Stack level 0 always corresponds to the debug.getinfo call, 1 would be the function calling debug.getinfo in most cases, and so on.
+--- Returns useful information about that function in a table.
+---@param f integer|function
+---
+--- * `f` - Populates the func field.
+--- * `l` - Populates the currentline field.
+--- * `L` - Populates the activelines field.
+--- * `n` - Populates the name and namewhat fields - only works if stack level is passed rather than function pointer.
+--- * `S` - Populates the location fields (lastlinedefined, linedefined, short_src, source and what).
+--- * `u` - Populates the argument and upvalue fields (isvararg, nparams, nups).
+--- * `>` - Causes this function to use the last argument to get the data from.
+---@param what? debuglib.InfoWhat
+---
+---Function to use. (Only used by the `>` field)
+---@return debuglib.DebugInfo?
+---
+--- A table as a Structures/DebugInfo containing information about the function you passed. Can return nil if the stack level didn't point to a valid stack frame.
+---@nodiscard
+function debug.getinfo(thread, f, what) end
